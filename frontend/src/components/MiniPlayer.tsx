@@ -19,9 +19,10 @@ export function MiniPlayer() {
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio || !track) return;
+    if (!track.previewUrl) { stop(); return; }
     audio.src = track.previewUrl;
-    audio.play().catch(() => {});
-  }, [track]);
+    audio.play().catch(() => stop());
+  }, [track, stop]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -60,6 +61,7 @@ export function MiniPlayer() {
   }
 
   function fmt(s: number) {
+    if (!isFinite(s) || s < 0) return '0:00';
     const m = Math.floor(s / 60);
     return `${m}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
   }

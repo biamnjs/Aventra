@@ -44,7 +44,7 @@ const moodColors: Record<string, string> = {
   melancólica: 'bg-purple-100 text-purple-700',
 };
 
-function SongRow({ song }: { song: Playlist['songs'][number]; index: number }) {
+function SongRow({ song }: { song: Playlist['songs'][number] }) {
   const { track, isPlaying, setTrack, togglePlay } = usePlayerStore();
   const [loading, setLoading] = useState(false);
   const [unavailable, setUnavailable] = useState(false);
@@ -181,7 +181,7 @@ function PlaylistCard({ playlist }: { playlist: Playlist }) {
         <div className="border-t border-gray-100">
           <div className="max-h-80 overflow-y-auto">
             {playlist.songs.map((song, i) => (
-              <SongRow key={i} song={song} index={i} />
+              <SongRow key={`${song.title}-${song.artist}-${i}`} song={song} />
             ))}
           </div>
           <div className="px-5 py-2.5 border-t border-gray-50 text-xs text-gray-400 flex items-center gap-1">

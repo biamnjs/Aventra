@@ -75,7 +75,7 @@ model Trip {
   userId        String
   user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   destinationId String
-  destination   Destination @relation(fields: [destinationId], references: [id])
+  destination   Destination @relation(fields: [destinationId], references: [id], onDelete: Restrict)
   title         String
   startDate     DateTime?
   endDate       DateTime?
@@ -88,6 +88,7 @@ model Trip {
   itinerary ItineraryDay[]
   playlists Playlist[]
 
+  @@index([userId])
   @@map("trips")
 }
 
@@ -149,12 +150,13 @@ model Playlist {
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   tripId    String?
-  trip      Trip?    @relation(fields: [tripId], references: [id])
+  trip      Trip?    @relation(fields: [tripId], references: [id], onDelete: SetNull)
   name      String
   type      PlaylistType
   songs     Json
   createdAt DateTime @default(now())
 
+  @@index([userId])
   @@map("playlists")
 }
 
@@ -177,6 +179,7 @@ model Favorite {
   createdAt   DateTime     @default(now())
 
   @@unique([userId, type, referenceId])
+  @@index([userId])
   @@map("favorites")
 }
 
@@ -193,11 +196,13 @@ model Review {
   userId        String
   user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   destinationId String
-  destination   Destination @relation(fields: [destinationId], references: [id])
+  destination   Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
   rating        Int
   content       String?
   createdAt     DateTime    @default(now())
 
+  @@unique([userId, destinationId])
+  @@index([destinationId])
   @@map("reviews")
 }
 
@@ -210,5 +215,6 @@ model Notification {
   read      Boolean  @default(false)
   createdAt DateTime @default(now())
 
+  @@index([userId])
   @@map("notifications")
 }

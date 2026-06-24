@@ -1,5 +1,6 @@
 import { PlaylistType, Prisma } from '@prisma/client';
 import { prisma } from '../config/database';
+import { AppError } from '../middleware/error.middleware';
 
 export async function createPlaylist(userId: string, data: {
   name: string;
@@ -7,6 +8,12 @@ export async function createPlaylist(userId: string, data: {
   tripId?: string;
   songs: unknown[];
 }) {
+  // IDOR guard: if tripId provided, verify it belongs to this user
+  if (data.tripId) {
+    const trip = await prisma.trip.findFirst({ where: { id: data.tripId, userId } });
+    if (!trip) throw new AppError(403, 'Acesso negado a esta viagem');
+  }
+
   return prisma.playlist.create({
     data: { userId, ...data, songs: data.songs as Prisma.InputJsonValue[] },
   });

@@ -60,7 +60,10 @@ export const createTripSchema = z.object({
   endDate: z.string().datetime({ message: 'Data de regresso inválida' }).optional(),
   budget: z.number().positive('Orçamento deve ser positivo').optional(),
   notes: z.string().max(2000).optional(),
-});
+}).refine(
+  (d) => !d.startDate || !d.endDate || new Date(d.endDate) >= new Date(d.startDate),
+  { message: 'Data de regresso deve ser posterior à data de partida', path: ['endDate'] },
+);
 
 export const updateTripSchema = z.object({
   title: z.string().min(1).max(200).optional(),
@@ -69,7 +72,10 @@ export const updateTripSchema = z.object({
   status: z.enum(['PLANNING', 'BOOKED', 'ONGOING', 'COMPLETED', 'CANCELLED']).optional(),
   budget: z.number().positive().optional(),
   notes: z.string().max(2000).optional(),
-});
+}).refine(
+  (d) => !d.startDate || !d.endDate || new Date(d.endDate) >= new Date(d.startDate),
+  { message: 'Data de regresso deve ser posterior à data de partida', path: ['endDate'] },
+);
 
 export const chatSchema = z.object({
   message: z.string().min(1, 'Mensagem obrigatória').max(1000, 'Mensagem demasiado longa'),

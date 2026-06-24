@@ -51,7 +51,7 @@ export function errorHandler(err: unknown, req: Request, res: Response, _next: N
     if (isProxyDown) {
       res.status(503).json({
         success: false,
-        error: 'Proxy Eter inacessível — verifica o túnel SSH (porta 4099)',
+        error: 'Serviço de IA temporariamente indisponível. Tente novamente em breve.',
       });
       return;
     }
