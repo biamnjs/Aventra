@@ -7,7 +7,7 @@ import { cn } from '../../lib/utils';
 
 const navLinks = [
   { href: '/painel', label: 'Painel', icon: LayoutDashboard },
-  { href: '/pesquisar', label: 'Pesquisar', icon: Search },
+  { href: '/destinos', label: 'Pesquisar', icon: Search },
   { href: '/destinos', label: 'Destinos', icon: MapPin },
   { href: '/playlists', label: 'Playlists', icon: Music },
   { href: '/favoritos', label: 'Favoritos', icon: Heart },
@@ -54,7 +54,7 @@ export function Navbar() {
             {isAuthenticated ? (
               <>
                 <Link
-                  to="/perfil"
+                  to="/perfil/questionario"
                   className="hidden md:flex items-center gap-2 text-sm text-gray-700 hover:text-gray-900"
                 >
                   {user?.avatar ? (

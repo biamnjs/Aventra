@@ -184,7 +184,7 @@ export function TripDetail() {
             </Card>
           )}
           <div className="grid sm:grid-cols-2 gap-4">
-            <Link to={`/destinos/${trip.destination.id ?? 'bali'}`}>
+            <Link to={trip.destination.id ? `/destinos/${trip.destination.id}` : '/destinos'}>
               <Card hover className="p-5 flex items-center gap-3">
                 <MapPin className="w-5 h-5 text-brand-500" />
                 <div>

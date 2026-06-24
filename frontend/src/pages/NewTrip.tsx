@@ -1,19 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { MapPin, Calendar, Wallet, Search, ArrowLeft, FileText } from 'lucide-react';
 import { useCreateTrip } from '../hooks/useTrips';
 import { useSearchDestinations } from '../hooks/useDestinations';
+import { useDebounce } from '../hooks/useDebounce';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
-function useDebounceLocal(value: string, delay: number) {
-  const [debouncedValue, setDebouncedValue] = useState(value);
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedValue(value), delay);
-    return () => clearTimeout(timer);
-  }, [value, delay]);
-  return debouncedValue;
-}
 
 export function NewTrip() {
   const navigate = useNavigate();
@@ -37,7 +30,7 @@ export function NewTrip() {
   });
   const [error, setError] = useState('');
 
-  const debouncedSearch = useDebounceLocal(destinationSearch, 400);
+  const debouncedSearch = useDebounce(destinationSearch, 400);
   const { data: searchResults } = useSearchDestinations(debouncedSearch);
   const createTrip = useCreateTrip();
 

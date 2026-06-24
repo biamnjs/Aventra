@@ -126,7 +126,7 @@ export function Dashboard() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-10">
         {[
           { icon: Plus, label: 'Nova Viagem', href: '/viagens/nova', color: 'bg-brand-500 text-white' },
-          { icon: Brain, label: 'Recomendações IA', href: '/recomendacoes', color: 'bg-purple-500 text-white' },
+          { icon: Brain, label: 'Recomendações IA', href: '/destinos', color: 'bg-purple-500 text-white' },
           { icon: Compass, label: 'Explorar Destinos', href: '/destinos', color: 'bg-blue-500 text-white' },
           { icon: Music, label: 'Playlists', href: '/playlists', color: 'bg-green-500 text-white' },
         ].map(({ icon: Icon, label, href, color }) => (

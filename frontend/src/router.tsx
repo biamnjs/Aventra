@@ -12,19 +12,7 @@ import { TripDetail } from './pages/TripDetail';
 import { Playlists } from './pages/Playlists';
 import { Favorites } from './pages/Favorites';
 import { TravelerQuestionnaire } from './pages/TravelerQuestionnaire';
-import { useAuthStore } from './store/authStore';
-
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated } = useAuthStore();
-  if (!isAuthenticated) return <Navigate to="/entrar" replace />;
-  return <>{children}</>;
-}
-
-function GuestRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated } = useAuthStore();
-  if (isAuthenticated) return <Navigate to="/painel" replace />;
-  return <>{children}</>;
-}
+import { ProtectedRoute, GuestRoute } from './components/ProtectedRoute';
 
 export const router = createBrowserRouter([
   {
