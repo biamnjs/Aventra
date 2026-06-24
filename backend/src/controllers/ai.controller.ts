@@ -58,10 +58,65 @@ export async function generatePlaylist(req: AuthRequest, res: Response, next: Ne
       name: result.name,
       type,
       tripId,
+      destination,
+      genres: musicGenres,
       songs: enrichedSongs,
     });
 
     res.status(201).json({ success: true, data: { playlist, description: result.description } });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function refreshPlaylist(req: AuthRequest, res: Response, next: NextFunction) {
+  try {
+    const schema = z.object({
+      keepSongIndices: z.array(z.number().int().min(0)),
+    });
+
+    const { id } = req.params as { id: string };
+    const { keepSongIndices } = schema.parse(req.body);
+
+    const playlist = await playlistService.getPlaylistById(id, req.userId!);
+    const currentSongs = playlist.songs as Array<{ title: string; artist: string; genre: string; mood?: string; reason?: string; imageUrl?: string | null; lastFmUrl?: string | null; listeners?: number | null; album?: string | null }>;
+
+    const keptSongs = keepSongIndices
+      .filter((i) => i < currentSongs.length)
+      .map((i) => currentSongs[i]!);
+
+    const countToGenerate = currentSongs.length - keptSongs.length;
+
+    if (countToGenerate === 0) {
+      res.json({ success: true, data: { playlist } });
+      return;
+    }
+
+    const destination = (playlist as unknown as { destination?: string }).destination ?? 'mundo';
+    const genres = (playlist as unknown as { genres?: string[] }).genres ?? ['pop', 'indie'];
+
+    const result = await aiService.refreshPlaylistSongs(
+      destination,
+      genres,
+      playlist.type,
+      keptSongs.map((s) => ({ title: s.title, artist: s.artist })),
+      countToGenerate,
+    );
+
+    const enrichedNew = await enrichSongs(result.songs);
+    const mergedSongs: unknown[] = [...Array(currentSongs.length)];
+
+    let newIdx = 0;
+    for (let i = 0; i < currentSongs.length; i++) {
+      if (keepSongIndices.includes(i)) {
+        mergedSongs[i] = currentSongs[i];
+      } else {
+        mergedSongs[i] = enrichedNew[newIdx++] ?? currentSongs[i];
+      }
+    }
+
+    const updated = await playlistService.updatePlaylistSongs(id, req.userId!, mergedSongs);
+    res.json({ success: true, data: { playlist: updated } });
   } catch (err) {
     next(err);
   }

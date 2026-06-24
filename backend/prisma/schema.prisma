@@ -146,15 +146,17 @@ model Flight {
 }
 
 model Playlist {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tripId    String?
-  trip      Trip?    @relation(fields: [tripId], references: [id], onDelete: SetNull)
-  name      String
-  type      PlaylistType
-  songs     Json
-  createdAt DateTime @default(now())
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tripId      String?
+  trip        Trip?    @relation(fields: [tripId], references: [id], onDelete: SetNull)
+  name        String
+  type        PlaylistType
+  songs       Json
+  destination String?
+  genres      String[]
+  createdAt   DateTime @default(now())
 
   @@index([userId])
   @@map("playlists")

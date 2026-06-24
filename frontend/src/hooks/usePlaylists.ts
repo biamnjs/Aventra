@@ -32,3 +32,14 @@ export function useDeletePlaylist() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['playlists'] }),
   });
 }
+
+export function useRefreshPlaylist() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, keepSongIndices }: { id: string; keepSongIndices: number[] }) => {
+      const res = await api.post(`/ai/playlist/${id}/refresh`, { keepSongIndices });
+      return res.data.data as { playlist: Playlist };
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['playlists'] }),
+  });
+}

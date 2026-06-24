@@ -122,12 +122,16 @@ export async function generatePlaylist(destination: string, musicGenres: string[
     SUNSET: 'pôr do sol', ROMANTIC: 'romântica', ADVENTURE: 'aventura',
   };
 
-  const system = 'És um DJ e especialista musical. Responde APENAS com JSON válido, sem texto extra.';
+  const system = 'És um DJ e especialista musical com conhecimento global. Responde APENAS com JSON válido, sem texto extra.';
   const user = `Cria uma playlist para ${typeLabels[playlistType] || 'viagem'} com destino a ${destination}.
 
 Géneros favoritos: ${musicGenres.join(', ')}
 
-Cria 12 músicas que misturem os géneros favoritos com músicas típicas do destino.
+Cria 12 músicas com MIX INTERNACIONAL VARIADO:
+- 5 a 6 hits internacionais em inglês (artistas como Taylor Swift, Coldplay, Dua Lipa, The Weeknd, Bad Bunny, etc.) dos géneros escolhidos
+- 2 a 3 músicas locais/regionais do país de destino
+- 3 a 4 músicas de outros países e géneros que combinem com o ambiente da viagem
+Inclui artistas de todo o mundo. NÃO te limites a músicas portuguesas ou brasileiras.
 
 Formato JSON:
 {
@@ -146,6 +150,49 @@ Formato JSON:
 
   const text = await ask(system, user, 2000);
   return parseJson(text);
+}
+
+export async function refreshPlaylistSongs(
+  destination: string,
+  musicGenres: string[],
+  playlistType: string,
+  keepSongs: Array<{ title: string; artist: string }>,
+  count: number,
+) {
+  const typeLabels: Record<string, string> = {
+    TRAVEL: 'viagem', STORIES: 'stories de Instagram', REELS: 'reels',
+    SUNSET: 'pôr do sol', ROMANTIC: 'romântica', ADVENTURE: 'aventura',
+  };
+
+  const avoidList = keepSongs.map((s) => `"${s.title}" de ${s.artist}`).join(', ');
+
+  const system = 'És um DJ e especialista musical com conhecimento global. Responde APENAS com JSON válido, sem texto extra.';
+  const user = `Cria ${count} músicas NOVAS para uma playlist de ${typeLabels[playlistType] || 'viagem'} com destino a ${destination}.
+
+Géneros favoritos: ${musicGenres.join(', ')}
+
+Músicas já na playlist (NÃO repitas estas): ${avoidList || 'nenhuma'}
+
+Cria ${count} músicas DIFERENTES com mix internacional variado:
+- Hits internacionais em inglês dos géneros escolhidos (artistas conhecidos globalmente)
+- Algumas músicas locais/regionais do destino
+- Artistas de todo o mundo — NÃO te limites a músicas portuguesas ou brasileiras
+
+Formato JSON:
+{
+  "songs": [
+    {
+      "title": "Título da Música",
+      "artist": "Nome do Artista",
+      "genre": "Género",
+      "mood": "animada|relaxante|romântica|intensa|melancólica",
+      "reason": "Por que combina com a viagem"
+    }
+  ]
+}`;
+
+  const text = await ask(system, user, 1500);
+  return parseJson(text) as { songs: Array<{ title: string; artist: string; genre: string; mood: string; reason: string }> };
 }
 
 export async function generateInstagramContent(destination: string, activityDescription: string) {

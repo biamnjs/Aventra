@@ -55,6 +55,8 @@ export interface Playlist {
   type: 'TRAVEL' | 'STORIES' | 'REELS' | 'SUNSET' | 'ROMANTIC' | 'ADVENTURE';
   songs: Song[];
   tripId?: string;
+  destination?: string;
+  genres?: string[];
   createdAt: string;
 }
 

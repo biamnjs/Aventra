@@ -7,15 +7,34 @@ export async function createPlaylist(userId: string, data: {
   type: PlaylistType;
   tripId?: string;
   songs: unknown[];
+  destination?: string;
+  genres?: string[];
 }) {
-  // IDOR guard: if tripId provided, verify it belongs to this user
   if (data.tripId) {
     const trip = await prisma.trip.findFirst({ where: { id: data.tripId, userId } });
     if (!trip) throw new AppError(403, 'Acesso negado a esta viagem');
   }
 
   return prisma.playlist.create({
-    data: { userId, ...data, songs: data.songs as Prisma.InputJsonValue[] },
+    data: {
+      userId,
+      name: data.name,
+      type: data.type,
+      tripId: data.tripId,
+      destination: data.destination,
+      genres: data.genres ?? [],
+      songs: data.songs as Prisma.InputJsonValue[],
+    },
+  });
+}
+
+export async function updatePlaylistSongs(playlistId: string, userId: string, songs: unknown[]) {
+  const playlist = await prisma.playlist.findFirst({ where: { id: playlistId, userId } });
+  if (!playlist) throw new AppError(404, 'Playlist não encontrada');
+
+  return prisma.playlist.update({
+    where: { id: playlistId },
+    data: { songs: songs as Prisma.InputJsonValue[] },
   });
 }
 
