@@ -194,11 +194,11 @@ export function Dashboard() {
                 <RecommendationCard key={rec.name} rec={rec} />
               ))}
             </div>
-          ) : recsError ? (
+          ) : recsError && (recsError as { response?: { status?: number } }).response?.status !== 400 ? (
             <Card className="p-6 text-center">
               <Brain className="w-8 h-8 text-amber-300 mx-auto mb-2" />
               <p className="text-sm font-medium text-gray-700 mb-1">IA temporariamente indisponível</p>
-              <p className="text-xs text-gray-400">Ativa o proxy para recomendações personalizadas</p>
+              <p className="text-xs text-gray-400">Tenta novamente em alguns instantes</p>
             </Card>
           ) : (
             <Card className="p-6 text-center">
