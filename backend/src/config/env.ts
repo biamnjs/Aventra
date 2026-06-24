@@ -13,6 +13,7 @@ const envSchema = z.object({
   AI_MODEL: z.string().min(1),
   AI_PROXY_KEY: z.string().min(1),
   CLAUDE_MODEL: z.string().default('claude-sonnet-4-6'),
+  LASTFM_API_KEY: z.string().optional(),
   GOOGLE_MAPS_API_KEY: z.string().optional(),
   WEATHER_API_KEY: z.string().optional(),
   FRONTEND_URL: z.string().default('http://localhost:5173'),

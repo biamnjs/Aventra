@@ -73,48 +73,64 @@ function SongRow({ song, index }: { song: Playlist['songs'][number]; index: numb
     }
   }
 
-  const ytUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(`${song.title} ${song.artist}`)}`;
+  const fallbackUrl = `https://www.last.fm/search/tracks?q=${encodeURIComponent(`${song.title} ${song.artist}`)}`;
+  const linkUrl = song.lastFmUrl ?? fallbackUrl;
 
   return (
     <div className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 border-b border-gray-50 last:border-0 group">
-      {/* número / play */}
-      <div className="w-7 flex-shrink-0 flex items-center justify-center">
-        {loading ? (
-          <Loader2 className="w-4 h-4 text-brand-400 animate-spin" />
-        ) : unavailable ? (
-          <span className="text-xs text-red-400">—</span>
+      {/* capa do álbum / play */}
+      <div className="w-10 h-10 flex-shrink-0 relative rounded-lg overflow-hidden bg-gray-100">
+        {song.imageUrl ? (
+          <img src={song.imageUrl} alt={song.album ?? song.title} className="w-full h-full object-cover" />
         ) : (
-          <>
-            <span className={`text-sm text-gray-400 group-hover:hidden ${isActive ? 'hidden' : ''}`}>{index + 1}</span>
-            <button
-              onClick={handlePlay}
-              className={`hidden group-hover:flex items-center justify-center w-6 h-6 rounded-full bg-brand-500 text-white hover:bg-brand-600 transition-colors ${isActive ? '!flex' : ''}`}
-            >
-              {isActive && isPlaying ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3 ml-0.5" />}
-            </button>
-          </>
+          <div className="w-full h-full bg-gradient-to-br from-purple-200 to-pink-200 flex items-center justify-center">
+            <Music className="w-4 h-4 text-purple-400" />
+          </div>
+        )}
+        <button
+          onClick={handlePlay}
+          className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity"
+        >
+          {loading ? (
+            <Loader2 className="w-4 h-4 text-white animate-spin" />
+          ) : unavailable ? (
+            <span className="text-xs text-white">—</span>
+          ) : isActive && isPlaying ? (
+            <Pause className="w-4 h-4 text-white" />
+          ) : (
+            <Play className="w-4 h-4 text-white ml-0.5" />
+          )}
+        </button>
+        {isActive && !loading && (
+          <div className="absolute inset-0 ring-2 ring-brand-500 rounded-lg pointer-events-none" />
         )}
       </div>
 
       {/* info */}
       <div className="flex-1 min-w-0">
         <p className={`text-sm font-medium truncate ${isActive ? 'text-brand-600' : 'text-gray-900'}`}>{song.title}</p>
-        <p className="text-xs text-gray-500 truncate">{song.artist}</p>
+        <p className="text-xs text-gray-500 truncate">
+          {song.artist}
+          {song.album && <span className="text-gray-400"> · {song.album}</span>}
+        </p>
+        {song.listeners && (
+          <p className="text-xs text-gray-400">{song.listeners.toLocaleString('pt-PT')} ouvintes</p>
+        )}
       </div>
 
-      {/* mood + yt */}
+      {/* mood + last.fm */}
       <div className="flex items-center gap-2 flex-shrink-0">
         {song.mood && (
-          <span className={`text-xs px-2 py-0.5 rounded-full ${moodColors[song.mood] ?? 'bg-gray-100 text-gray-600'}`}>
+          <span className={`text-xs px-2 py-0.5 rounded-full hidden sm:inline ${moodColors[song.mood] ?? 'bg-gray-100 text-gray-600'}`}>
             {song.mood}
           </span>
         )}
         <a
-          href={ytUrl}
+          href={linkUrl}
           target="_blank"
           rel="noopener noreferrer"
           className="opacity-0 group-hover:opacity-100 transition-opacity p-1 text-gray-400 hover:text-red-500"
-          title="Abrir no YouTube"
+          title="Abrir no Last.fm"
           onClick={(e) => e.stopPropagation()}
         >
           <ExternalLink className="w-3.5 h-3.5" />

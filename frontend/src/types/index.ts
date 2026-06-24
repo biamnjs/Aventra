@@ -64,6 +64,10 @@ export interface Song {
   genre: string;
   mood?: string;
   reason?: string;
+  imageUrl?: string | null;
+  lastFmUrl?: string | null;
+  listeners?: number | null;
+  album?: string | null;
 }
 
 export interface Recommendation {

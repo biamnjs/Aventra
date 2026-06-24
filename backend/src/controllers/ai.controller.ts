@@ -5,6 +5,7 @@ import { AuthRequest } from '../types';
 import * as aiService from '../services/ai.service';
 import * as userService from '../services/user.service';
 import * as playlistService from '../services/playlist.service';
+import { enrichSongs } from '../services/lastfm.service';
 
 export async function getRecommendations(req: AuthRequest, res: Response, next: NextFunction) {
   try {
@@ -49,13 +50,15 @@ export async function generatePlaylist(req: AuthRequest, res: Response, next: Ne
     const profile = await userService.getTravelerProfile(req.userId!);
     const musicGenres = genres?.length ? genres : (profile?.musicGenres ?? ['pop', 'indie']);
 
-    const result = await aiService.generatePlaylist(destination, musicGenres, type) as { name: string; description: string; songs: unknown[] };
+    const result = await aiService.generatePlaylist(destination, musicGenres, type) as { name: string; description: string; songs: Array<{ title: string; artist: string; [key: string]: unknown }> };
+
+    const enrichedSongs = await enrichSongs(result.songs);
 
     const playlist = await playlistService.createPlaylist(req.userId!, {
       name: result.name,
       type,
       tripId,
-      songs: result.songs,
+      songs: enrichedSongs,
     });
 
     res.status(201).json({ success: true, data: { playlist, description: result.description } });
