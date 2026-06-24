@@ -24,3 +24,9 @@ npm-debug.log*
 
 # TypeScript build info
 *.tsbuildinfo
+
+# Test scripts e screenshots temporários
+test-browser*.mjs
+test-final.mjs
+screenshot-*.png
+snap-*.png
