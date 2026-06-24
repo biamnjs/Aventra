@@ -4,8 +4,11 @@ import cors from 'cors';
 import { filterXSS } from 'xss';
 import { env } from '../config/env';
 
+const isHttps = env.FRONTEND_URL?.startsWith('https');
+
 export const helmetConfig = helmet({
   contentSecurityPolicy: {
+    useDefaults: false,
     directives: {
       defaultSrc: ["'self'"],
       scriptSrc: ["'self'"],
@@ -14,19 +17,25 @@ export const helmetConfig = helmet({
       connectSrc: ["'self'"],
       fontSrc: ["'self'"],
       objectSrc: ["'none'"],
-      upgradeInsecureRequests: [],
+      baseUri: ["'self'"],
+      formAction: ["'self'"],
+      frameAncestors: ["'self'"],
     },
   },
+  // desativa HSTS em HTTP (só ativar com HTTPS real)
+  strictTransportSecurity: isHttps ? { maxAge: 31536000, includeSubDomains: true } : false,
   crossOriginEmbedderPolicy: false,
+  crossOriginOpenerPolicy: false,
 });
 
 export const corsConfig = cors({
   origin: (origin, callback) => {
     const allowed = [env.FRONTEND_URL, 'http://localhost:5173', 'http://localhost:3001'];
+    // sem origin = mesmo servidor; allowed = origins conhecidos; callback(null,false) = sem CORS headers (não 500)
     if (!origin || allowed.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error('Origem não permitida pelo CORS'));
+      callback(null, false);
     }
   },
   credentials: true,
