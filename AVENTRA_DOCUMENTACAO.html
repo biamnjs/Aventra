@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Aventra — Documentação do Projecto</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; color: #1a1a2e; background: #fff; font-size: 13px; line-height: 1.6; }
+
+  /* CAPA */
+  .cover { background: linear-gradient(135deg, #ff5a2c 0%, #ff8c42 50%, #ffb347 100%); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 60px 40px; page-break-after: always; }
+  .cover-logo { width: 80px; height: 80px; background: white; border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; font-size: 36px; }
+  .cover h1 { font-size: 52px; font-weight: 800; color: white; letter-spacing: -1px; margin-bottom: 8px; }
+  .cover .subtitle { font-size: 20px; color: rgba(255,255,255,0.9); margin-bottom: 48px; font-weight: 300; }
+  .cover-badges { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-bottom: 48px; }
+  .badge { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); color: white; padding: 6px 16px; border-radius: 999px; font-size: 12px; font-weight: 500; }
+  .cover-meta { color: rgba(255,255,255,0.8); font-size: 13px; }
+  .cover-meta span { margin: 0 12px; }
+
+  /* LAYOUT */
+  .page { padding: 48px 56px; max-width: 900px; margin: 0 auto; }
+  .section { margin-bottom: 40px; page-break-inside: avoid; }
+  .page-break { page-break-before: always; padding-top: 48px; }
+
+  /* TÍTULOS */
+  h2 { font-size: 22px; font-weight: 700; color: #ff5a2c; border-bottom: 2px solid #ff5a2c; padding-bottom: 8px; margin-bottom: 20px; margin-top: 36px; }
+  h3 { font-size: 15px; font-weight: 600; color: #1a1a2e; margin-bottom: 10px; margin-top: 20px; }
+  h4 { font-size: 13px; font-weight: 600; color: #444; margin-bottom: 6px; margin-top: 14px; }
+
+  /* TABELAS */
+  table { width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size: 12.5px; }
+  th { background: #ff5a2c; color: white; padding: 8px 12px; text-align: left; font-weight: 600; }
+  td { padding: 7px 12px; border-bottom: 1px solid #f0f0f0; vertical-align: top; }
+  tr:nth-child(even) td { background: #fafafa; }
+
+  /* BLOCOS */
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .info-card { background: #fff8f5; border: 1px solid #ffddd0; border-radius: 10px; padding: 16px; }
+  .info-card h4 { color: #ff5a2c; margin-top: 0; }
+
+  .status-done { color: #16a34a; font-weight: 600; }
+  .status-pending { color: #d97706; font-weight: 600; }
+  .status-blocked { color: #dc2626; font-weight: 600; }
+
+  /* CÓDIGO */
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 16px 20px; border-radius: 10px; font-size: 12px; overflow-x: auto; margin: 10px 0 16px; font-family: 'Consolas', 'Courier New', monospace; line-height: 1.5; }
+  code { background: #fff0eb; color: #ff5a2c; padding: 2px 6px; border-radius: 4px; font-size: 11.5px; font-family: 'Consolas', monospace; }
+
+  /* ALERTAS */
+  .alert { border-radius: 10px; padding: 14px 18px; margin: 12px 0; font-size: 12.5px; }
+  .alert-warning { background: #fffbeb; border-left: 4px solid #f59e0b; }
+  .alert-success { background: #f0fdf4; border-left: 4px solid #22c55e; }
+  .alert-danger { background: #fef2f2; border-left: 4px solid #ef4444; }
+  .alert-info { background: #eff6ff; border-left: 4px solid #3b82f6; }
+  .alert strong { display: block; margin-bottom: 4px; }
+
+  /* LISTA */
+  ul, ol { padding-left: 20px; }
+  li { margin-bottom: 4px; }
+  .checklist { list-style: none; padding-left: 0; }
+  .checklist li { padding-left: 24px; position: relative; }
+  .checklist li::before { position: absolute; left: 0; }
+  .checklist li.done::before { content: '✅'; }
+  .checklist li.pending::before { content: '⏳'; }
+  .checklist li.blocked::before { content: '🔴'; }
+
+  /* ENDPOINT TAGS */
+  .method { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; margin-right: 6px; }
+  .get { background: #dbeafe; color: #1d4ed8; }
+  .post { background: #dcfce7; color: #15803d; }
+  .put { background: #fef9c3; color: #854d0e; }
+  .delete { background: #fee2e2; color: #991b1b; }
+
+  /* RODAPÉ */
+  .footer { text-align: center; color: #999; font-size: 11px; padding: 32px 0 16px; border-top: 1px solid #eee; margin-top: 48px; }
+
+  @media print {
+    body { font-size: 12px; }
+    .cover { min-height: auto; padding: 80px 40px; }
+    pre { white-space: pre-wrap; word-break: break-all; }
+  }
+</style>
+</head>
+<body>
+
+<!-- CAPA -->
+<div class="cover">
+  <div class="cover-logo">📍</div>
+  <h1>Aventra</h1>
+  <div class="subtitle">Plataforma Inteligente de Viagens Personalizadas com IA</div>
+  <div class="cover-badges">
+    <span class="badge">Node.js + Express</span>
+    <span class="badge">React 18 + Vite</span>
+    <span class="badge">TypeScript</span>
+    <span class="badge">PostgreSQL + Prisma</span>
+    <span class="badge">Claude AI (Anthropic)</span>
+    <span class="badge">Tailwind CSS v4</span>
+  </div>
+  <div class="cover-meta">
+    <span>📅 Junho 2026</span>
+    <span>👩‍💻 Bianca Amanajás</span>
+    <span>🏢 Eter Growth</span>
+  </div>
+</div>
+
+<!-- ÍNDICE -->
+<div class="page">
+  <h2>Índice</h2>
+  <ol style="font-size:14px; line-height:2;">
+    <li>Visão Geral do Projecto</li>
+    <li>Stack Tecnológica</li>
+    <li>Arquitectura</li>
+    <li>Estrutura de Ficheiros</li>
+    <li>Base de Dados — Schema Prisma</li>
+    <li>Backend — Endpoints da API</li>
+    <li>Frontend — Páginas e Funcionalidades</li>
+    <li>Configuração de Ambiente (.env)</li>
+    <li>Estado Actual e Progresso</li>
+    <li>Como Iniciar o Projecto (Sessão de Desenvolvimento)</li>
+    <li>Problemas Conhecidos e Soluções</li>
+    <li>Próximos Passos</li>
+  </ol>
+</div>
+
+<!-- 1. VISÃO GERAL -->
+<div class="page page-break">
+  <h2>1. Visão Geral do Projecto</h2>
+
+  <p>A <strong>Aventra</strong> é uma plataforma web de viagens personalizadas com Inteligência Artificial. O utilizador cria um perfil de viajante (preferências musicais, actividades, orçamento, clima) e a IA gera recomendações de destinos, roteiros dia a dia e playlists musicais adaptadas a cada viagem.</p>
+
+  <div class="info-grid" style="margin-top:20px;">
+    <div class="info-card">
+      <h4>Cor Brand</h4>
+      <p>Laranja <code>#ff5a2c</code> — usado em botões, destaques e favicon</p>
+    </div>
+    <div class="info-card">
+      <h4>Idioma da Interface</h4>
+      <p>Português de Portugal — todo o texto ao utilizador está em PT-PT</p>
+    </div>
+    <div class="info-card">
+      <h4>Assistente Virtual</h4>
+      <p><strong>Ava</strong> — chat flutuante disponível em todas as páginas quando autenticado</p>
+    </div>
+    <div class="info-card">
+      <h4>Modelo IA</h4>
+      <p>Claude Sonnet 4.6 via Anthropic API (<code>claude-sonnet-4-6</code>)</p>
+    </div>
+  </div>
+
+  <h3>Funcionalidades Principais</h3>
+  <ul>
+    <li>Registo e autenticação com JWT (7 dias)</li>
+    <li>Questionário multi-step de perfil do viajante (6 passos)</li>
+    <li>Recomendações de destinos personalizadas por IA</li>
+    <li>Gestão de viagens (criar, actualizar, eliminar, mudar status)</li>
+    <li>Geração de roteiro dia a dia por IA para cada viagem</li>
+    <li>Playlists musicais geradas por IA com seleção de 16 géneros</li>
+    <li>Sistema de favoritos (destinos, hotéis, restaurantes, etc.)</li>
+    <li>Chat com assistente Ava em linguagem natural</li>
+    <li>Exploração de 12 destinos pré-populados com hotéis e avaliações</li>
+  </ul>
+</div>
+
+<!-- 2. STACK -->
+<div class="page">
+  <h2>2. Stack Tecnológica</h2>
+
+  <table>
+    <tr><th>Camada</th><th>Tecnologia</th><th>Versão</th><th>Propósito</th></tr>
+    <tr><td>Runtime</td><td>Node.js</td><td>20+</td><td>Servidor backend</td></tr>
+    <tr><td>Framework Backend</td><td>Express</td><td>5.x</td><td>API REST</td></tr>
+    <tr><td>Linguagem</td><td>TypeScript</td><td>6.x (strict)</td><td>Ambos frontend e backend</td></tr>
+    <tr><td>ORM</td><td>Prisma</td><td>5.22</td><td>Acesso à base de dados</td></tr>
+    <tr><td>Base de Dados</td><td>PostgreSQL</td><td>15+</td><td>VPS porta 5433</td></tr>
+    <tr><td>Autenticação</td><td>jsonwebtoken + bcryptjs</td><td>—</td><td>JWT + hash de passwords</td></tr>
+    <tr><td>Validação</td><td>Zod</td><td>3.x</td><td>Validação de inputs</td></tr>
+    <tr><td>IA</td><td>@anthropic-ai/sdk</td><td>—</td><td>Claude API</td></tr>
+    <tr><td>Framework Frontend</td><td>React</td><td>18 + 19</td><td>UI</td></tr>
+    <tr><td>Build Tool</td><td>Vite</td><td>8.x</td><td>Dev server + build</td></tr>
+    <tr><td>CSS</td><td>Tailwind CSS</td><td>v4</td><td>Styling</td></tr>
+    <tr><td>Estado Global</td><td>Zustand</td><td>5.x</td><td>Auth store (persistente)</td></tr>
+    <tr><td>Fetch / Cache</td><td>TanStack Query</td><td>v5</td><td>Server state, cache, mutations</td></tr>
+    <tr><td>HTTP Client</td><td>Axios</td><td>1.x</td><td>Chamadas API do frontend</td></tr>
+    <tr><td>Router</td><td>React Router DOM</td><td>v7</td><td>Navegação SPA</td></tr>
+  </table>
+</div>
+
+<!-- 3. ARQUITECTURA -->
+<div class="page">
+  <h2>3. Arquitectura</h2>
+
+<pre>┌─────────────────────────────────────────────────────────────┐
+│                     BROWSER (localhost:5173)                  │
+│                                                               │
+│  React 18 + Vite + TypeScript + Tailwind v4                  │
+│  Zustand (auth) · TanStack Query (server state) · Axios       │
+└──────────────────────────┬──────────────────────────────────┘
+                           │  HTTP /api/v1/*  (proxy Vite)
+                           ▼
+┌─────────────────────────────────────────────────────────────┐
+│                   BACKEND (localhost:3001)                    │
+│                                                               │
+│  Express 5 + TypeScript                                       │
+│  ┌──────────┐ ┌────────────┐ ┌──────────┐ ┌─────────────┐  │
+│  │  Routes  │ │Controllers │ │ Services │ │  Middleware  │  │
+│  │ /auth    │ │auth        │ │auth      │ │JWT auth      │  │
+│  │ /users   │ │user        │ │user      │ │Zod validate  │  │
+│  │ /destinos│ │destination │ │destination│ │Error handler │  │
+│  │ /trips   │ │trip        │ │trip      │ │              │  │
+│  │ /playlists│ │playlist   │ │playlist  │ │              │  │
+│  │ /favorites│ │favorite   │ │favorite  │ │              │  │
+│  │ /ai      │ │ai          │ │ai (Claude)│ │              │  │
+│  └──────────┘ └────────────┘ └──────────┘ └─────────────┘  │
+└──────────┬────────────────────────────┬──────────────────────┘
+           │                            │
+           ▼                            ▼
+┌─────────────────────┐    ┌──────────────────────────┐
+│  PostgreSQL (VPS)   │    │  Anthropic API           │
+│  187.124.39.3:5433  │    │  api.anthropic.com       │
+│  via SSH tunnel     │    │  claude-sonnet-4-6       │
+│  localhost:5433     │    │                          │
+└─────────────────────┘    └──────────────────────────┘</pre>
+</div>
+
+<!-- 4. ESTRUTURA DE FICHEIROS -->
+<div class="page page-break">
+  <h2>4. Estrutura de Ficheiros</h2>
+
+  <div class="info-grid">
+    <div>
+      <h3>Backend</h3>
+<pre>backend/
+├── prisma/
+│   ├── schema.prisma      ← Schema BD
+│   ├── seed.ts            ← 12 destinos
+│   └── migrations/
+├── src/
+│   ├── config/
+│   │   ├── env.ts         ← Validação .env (Zod)
+│   │   └── database.ts    ← Prisma singleton
+│   ├── middleware/
+│   │   ├── auth.ts        ← JWT verify
+│   │   └── errorHandler.ts
+│   ├── services/
+│   │   ├── ai.service.ts  ← Claude API
+│   │   ├── auth.service.ts
+│   │   ├── user.service.ts
+│   │   ├── destination.service.ts
+│   │   ├── trip.service.ts
+│   │   ├── playlist.service.ts
+│   │   └── favorite.service.ts
+│   ├── controllers/       ← Um por entidade
+│   ├── routes/
+│   │   └── index.ts       ← Monta todas as rotas
+│   ├── types/index.ts     ← AuthRequest, etc.
+│   ├── app.ts             ← Express setup
+│   └── server.ts          ← Entry point
+├── .env                   ← Variáveis de ambiente
+├── nodemon.json
+└── package.json</pre>
+    </div>
+    <div>
+      <h3>Frontend</h3>
+<pre>frontend/
+├── public/
+│   └── favicon.svg        ← Ícone laranja Aventra
+├── src/
+│   ├── components/
+│   │   ├── ui/
+│   │   │   ├── Button.tsx
+│   │   │   ├── Input.tsx
+│   │   │   └── Card.tsx
+│   │   ├── layout/
+│   │   │   ├── Layout.tsx
+│   │   │   └── Navbar.tsx
+│   │   └── ChatAssistant.tsx
+│   ├── hooks/
+│   │   ├── useAuth.ts
+│   │   ├── useDestinations.ts
+│   │   ├── useTrips.ts
+│   │   ├── useFavorites.ts
+│   │   ├── usePlaylists.ts
+│   │   └── useDebounce.ts
+│   ├── pages/
+│   │   ├── Home.tsx
+│   │   ├── Dashboard.tsx
+│   │   ├── auth/Login.tsx
+│   │   ├── auth/Register.tsx
+│   │   ├── Destinations.tsx
+│   │   ├── DestinationDetail.tsx
+│   │   ├── Trips.tsx
+│   │   ├── NewTrip.tsx
+│   │   ├── TripDetail.tsx
+│   │   ├── Playlists.tsx
+│   │   ├── Favorites.tsx
+│   │   └── TravelerQuestionnaire.tsx
+│   ├── store/authStore.ts
+│   ├── lib/
+│   │   ├── api.ts         ← Axios + interceptors
+│   │   └── utils.ts
+│   ├── types/index.ts
+│   ├── router.tsx
+│   └── main.tsx
+├── index.html
+└── vite.config.ts         ← Proxy /api → :3001</pre>
+    </div>
+  </div>
+</div>
+
+<!-- 5. BASE DE DADOS -->
+<div class="page page-break">
+  <h2>5. Base de Dados — Schema Prisma</h2>
+
+  <div class="alert alert-info">
+    <strong>📍 Localização</strong>
+    PostgreSQL na VPS <code>187.124.39.3</code> porta <code>5433</code> — base de dados <code>aventra</code>, utilizador <code>aventra</code>. Acesso local via SSH tunnel.
+  </div>
+
+  <table>
+    <tr><th>Tabela</th><th>Campos Principais</th><th>Relações</th></tr>
+    <tr>
+      <td><strong>users</strong></td>
+      <td>id, name, email, password, avatar</td>
+      <td>→ profile, trips, favorites, playlists, reviews, notifications</td>
+    </tr>
+    <tr>
+      <td><strong>traveler_profiles</strong></td>
+      <td>budget, accommodationType, musicGenres[], activities[], climateType, travelStyle, photography, socialMedia, travelerType</td>
+      <td>→ user (1:1)</td>
+    </tr>
+    <tr>
+      <td><strong>destinations</strong></td>
+      <td>name, country, description, imageUrl, climate, tags[], rating</td>
+      <td>→ hotels, reviews, trips, favorites</td>
+    </tr>
+    <tr>
+      <td><strong>trips</strong></td>
+      <td>title, status (PLANNING/BOOKED/ONGOING/COMPLETED/CANCELLED), startDate, endDate, budget, notes</td>
+      <td>→ user, destination, itineraryDays, playlists</td>
+    </tr>
+    <tr>
+      <td><strong>itinerary_days</strong></td>
+      <td>dayNumber, activities (JSON), totalEstimatedCost, tips</td>
+      <td>→ trip</td>
+    </tr>
+    <tr>
+      <td><strong>hotels</strong></td>
+      <td>name, stars, pricePerNight, amenities[], imageUrl</td>
+      <td>→ destination</td>
+    </tr>
+    <tr>
+      <td><strong>playlists</strong></td>
+      <td>name, type (TRAVEL/STORIES/REELS/SUNSET/ROMANTIC/ADVENTURE), songs (JSON)</td>
+      <td>→ user, trip</td>
+    </tr>
+    <tr>
+      <td><strong>favorites</strong></td>
+      <td>type (DESTINATION/HOTEL/RESTAURANT/ITINERARY/PLAYLIST), referenceId</td>
+      <td>→ user, destination</td>
+    </tr>
+    <tr>
+      <td><strong>reviews</strong></td>
+      <td>rating, comment</td>
+      <td>→ user, destination</td>
+    </tr>
+    <tr>
+      <td><strong>notifications</strong></td>
+      <td>title, message, type, read</td>
+      <td>→ user</td>
+    </tr>
+  </table>
+
+  <h3>Destinos pré-populados (seed)</h3>
+  <p>Barcelona, Bali, Lisboa, Tóquio, Paris, Nova Iorque, Santorini, Marrakech, Maldivas, Amsterdão, Rio de Janeiro, Queenstown — cada um com hotéis, tags e descrição.</p>
+</div>
+
+<!-- 6. ENDPOINTS API -->
+<div class="page page-break">
+  <h2>6. Backend — Endpoints da API</h2>
+  <p>Base URL: <code>http://localhost:3001/api/v1</code></p>
+
+  <h3>Autenticação <code>/auth</code></h3>
+  <table>
+    <tr><th>Método</th><th>Endpoint</th><th>Auth?</th><th>Descrição</th></tr>
+    <tr><td><span class="method post">POST</span></td><td>/auth/register</td><td>Não</td><td>Registo — name, email, password</td></tr>
+    <tr><td><span class="method post">POST</span></td><td>/auth/login</td><td>Não</td><td>Login — retorna user + JWT token</td></tr>
+    <tr><td><span class="method get">GET</span></td><td>/auth/me</td><td>✅ JWT</td><td>Dados do utilizador autenticado</td></tr>
+  </table>
+
+  <h3>Utilizadores <code>/users</code></h3>
+  <table>
+    <tr><th>Método</th><th>Endpoint</th><th>Descrição</th></tr>
+    <tr><td><span class="method post">POST</span></td><td>/users/traveler-profile</td><td>Guardar perfil do viajante</td></tr>
+    <tr><td><span class="method get">GET</span></td><td>/users/traveler-profile</td><td>Obter perfil do viajante</td></tr>
+    <tr><td><span class="method get">GET</span></td><td>/users/notifications</td><td>Listar notificações</td></tr>
+  </table>
+
+  <h3>Destinos <code>/destinations</code></h3>
+  <table>
+    <tr><th>Método</th><th>Endpoint</th><th>Descrição</th></tr>
+    <tr><td><span class="method get">GET</span></td><td>/destinations/featured</td><td>8 destinos em destaque (público)</td></tr>
+    <tr><td><span class="method get">GET</span></td><td>/destinations/search?q=</td><td>Pesquisa por nome (público)</td></tr>
+    <tr><td><span class="method get">GET</span></td><td>/destinations?climate=&tags=</td><td>Listar com filtros (público)</td></tr>
+    <tr><td><span class="method get">GET</span></td><td>/destinations/:id</td><td>Detalhe com hotéis e reviews (público)</td></tr>
+  </table>
+
+  <h3>Viagens <code>/trips</code></h3>
+  <table>
+    <tr><th>Método</th><th>Endpoint</th><th>Descrição</th></tr>
+    <tr><td><span class="method get">GET</span></td><td>/trips</td><td>Listar viagens do utilizador</td></tr>
+    <tr><td><span class="method post">POST</span></td><td>/trips</td><td>Criar viagem — destinationId, title, datas, budget</td></tr>
+    <tr><td><span class="method get">GET</span></td><td>/trips/:id</td><td>Detalhe com itinerário e playlists</td></tr>
+    <tr><td><span class="method put">PUT</span></td><td>/trips/:id</td><td>Actualizar (status, notas, etc.)</td></tr>
+    <tr><td><span class="method delete">DELETE</span></td><td>/trips/:id</td><td>Eliminar viagem</td></tr>
+    <tr><td><span class="method post">POST</span></td><td>/trips/:id/itinerary</td><td>Guardar itinerário gerado por IA</td></tr>
+  </table>
+
+  <h3>IA <code>/ai</code></h3>
+  <table>
+    <tr><th>Método</th><th>Endpoint</th><th>Descrição</th></tr>
+    <tr><td><span class="method get">GET</span></td><td>/ai/recommendations</td><td>6 destinos recomendados pelo perfil</td></tr>
+    <tr><td><span class="method post">POST</span></td><td>/ai/itinerary</td><td>Gerar roteiro — destination, days</td></tr>
+    <tr><td><span class="method post">POST</span></td><td>/ai/playlist</td><td>Gerar playlist — destination, type, genres[]</td></tr>
+    <tr><td><span class="method post">POST</span></td><td>/ai/chat</td><td>Chat com Ava — message, history[]</td></tr>
+    <tr><td><span class="method post">POST</span></td><td>/ai/traveler-type</td><td>Determinar tipo de viajante pelo perfil</td></tr>
+    <tr><td><span class="method post">POST</span></td><td>/ai/instagram</td><td>Sugestões de conteúdo Instagram</td></tr>
+  </table>
+</div>
+
+<!-- 7. FRONTEND -->
+<div class="page page-break">
+  <h2>7. Frontend — Páginas e Funcionalidades</h2>
+
+  <table>
+    <tr><th>Rota</th><th>Página</th><th>Auth?</th><th>Funcionalidades</th></tr>
+    <tr><td><code>/</code></td><td>Home (Landing)</td><td>Pública</td><td>Hero, destinos em destaque, features, CTA, footer</td></tr>
+    <tr><td><code>/entrar</code></td><td>Login</td><td>Guest only</td><td>Email + password, redirect /painel no sucesso</td></tr>
+    <tr><td><code>/registar</code></td><td>Registo</td><td>Guest only</td><td>Nome + email + password, redirect /perfil/questionario</td></tr>
+    <tr><td><code>/painel</code></td><td>Dashboard</td><td>✅</td><td>Saudação, acções rápidas, viagens activas, sugestões IA</td></tr>
+    <tr><td><code>/destinos</code></td><td>Destinos</td><td>Pública</td><td>Grid com filtros por clima e tags, pesquisa</td></tr>
+    <tr><td><code>/destinos/:id</code></td><td>Detalhe Destino</td><td>Pública</td><td>Hero, info, hotéis, favoritar, botão planear viagem</td></tr>
+    <tr><td><code>/viagens</code></td><td>Viagens</td><td>✅</td><td>Lista agrupada por status, eliminar</td></tr>
+    <tr><td><code>/viagens/nova</code></td><td>Nova Viagem</td><td>✅</td><td>Autocomplete destino, datas, orçamento, notas</td></tr>
+    <tr><td><code>/viagens/:id</code></td><td>Detalhe Viagem</td><td>✅</td><td>Tabs: Informação / Roteiro IA / Playlists</td></tr>
+    <tr><td><code>/playlists</code></td><td>Playlists</td><td>✅</td><td>Gerar com IA: 16 géneros musicais (checkboxes) + 6 tipos</td></tr>
+    <tr><td><code>/favoritos</code></td><td>Favoritos</td><td>✅</td><td>Lista agrupada por tipo, remover</td></tr>
+    <tr><td><code>/perfil/questionario</code></td><td>Questionário</td><td>✅</td><td>Wizard 6 passos: orçamento, estilo, actividades, música, clima, extras</td></tr>
+  </table>
+
+  <h3>Componentes Globais</h3>
+  <ul>
+    <li><strong>Navbar</strong> — sticky, links de navegação, avatar, botão sair, menu mobile</li>
+    <li><strong>ChatAssistant (Ava)</strong> — botão flutuante bottom-right, janela de chat com histórico, só visível quando autenticado</li>
+    <li><strong>ProtectedRoute / GuestRoute</strong> — wrappers de rota para controlo de acesso</li>
+  </ul>
+
+  <h3>16 Géneros Musicais nas Playlists</h3>
+  <p>Pop, Rock, Indie, Hip-Hop, R&amp;B / Soul, Electrónica, Jazz, Bossa Nova, Fado, Latino, Reggaeton, Afrobeat, Reggae, Folk / Acústico, Clássica, Funk / Chill</p>
+</div>
+
+<!-- 8. CONFIGURAÇÃO .ENV -->
+<div class="page page-break">
+  <h2>8. Configuração de Ambiente (.env)</h2>
+  <p>Ficheiro: <code>C:\Users\Asus\Desktop\Aventra\backend\.env</code></p>
+
+<pre>DATABASE_URL="postgresql://aventra:Avnt2024!SecureDB@localhost:5433/aventra"
+JWT_SECRET="aventra-super-secret-jwt-key-change-in-production-2024"
+JWT_EXPIRES_IN="7d"
+PORT=3001
+NODE_ENV="development"
+CLAUDE_API_KEY="sk-ant-api03-..."   ← Chave da Anthropic API
+CLAUDE_MODEL="claude-sonnet-4-6"
+FRONTEND_URL="http://localhost:5173"</pre>
+
+  <div class="alert alert-warning">
+    <strong>⚠️ CLAUDE_API_KEY</strong>
+    A chave Anthropic precisa de créditos activos em <strong>console.anthropic.com → Plans &amp; Billing</strong>. Sem créditos, todos os endpoints <code>/ai/*</code> retornam 503.
+  </div>
+
+  <table>
+    <tr><th>Variável</th><th>Valor</th><th>Notas</th></tr>
+    <tr><td>DATABASE_URL</td><td>postgresql://aventra:...@localhost:5433/aventra</td><td>Via SSH tunnel local</td></tr>
+    <tr><td>JWT_SECRET</td><td>string longa</td><td>Mínimo 32 chars (validado por Zod)</td></tr>
+    <tr><td>JWT_EXPIRES_IN</td><td>"7d"</td><td>Hardcoded — não usar variável no jwt.sign()</td></tr>
+    <tr><td>PORT</td><td>3001</td><td>Backend porta</td></tr>
+    <tr><td>CLAUDE_API_KEY</td><td>sk-ant-api03-...</td><td>Chave da console.anthropic.com</td></tr>
+    <tr><td>CLAUDE_MODEL</td><td>claude-sonnet-4-6</td><td>Modelo Claude a usar</td></tr>
+    <tr><td>FRONTEND_URL</td><td>http://localhost:5173</td><td>Para CORS</td></tr>
+  </table>
+</div>
+
+<!-- 9. ESTADO ACTUAL -->
+<div class="page page-break">
+  <h2>9. Estado Actual e Progresso</h2>
+
+  <ul class="checklist">
+    <li class="done">Schema Prisma com 10 tabelas criado</li>
+    <li class="done">Migration aplicada na BD do VPS</li>
+    <li class="done">Seed com 12 destinos executado</li>
+    <li class="done">Backend completo — todos os endpoints REST</li>
+    <li class="done">Middleware JWT + error handler (Zod + Prisma)</li>
+    <li class="done">Serviço IA (Claude) — recomendações, roteiros, playlists, chat, Instagram</li>
+    <li class="done">Frontend completo — todas as 12 páginas</li>
+    <li class="done">Autenticação (registo + login) a funcionar</li>
+    <li class="done">Favicon laranja Aventra</li>
+    <li class="done">Seleção de 16 géneros musicais nas playlists</li>
+    <li class="done">Graceful degradation quando IA indisponível</li>
+    <li class="done">Interceptor 401 corrigido (não recarrega página no login errado)</li>
+    <li class="blocked">Funcionalidades IA — bloqueadas por falta de créditos Anthropic</li>
+    <li class="pending">Páginas em falta: /pesquisar, /perfil, /recomendacoes</li>
+    <li class="pending">Deploy em produção (VPS + Vercel)</li>
+  </ul>
+
+  <div class="alert alert-danger" style="margin-top:24px;">
+    <strong>🔴 Bloqueador Actual — Créditos Anthropic</strong>
+    A chave API está correcta e configurada no <code>.env</code>. O único problema é que a conta não tem saldo. Resolve em <strong>console.anthropic.com → Plans &amp; Billing → Add Credits</strong> (mínimo $5).
+  </div>
+
+  <div class="alert alert-success">
+    <strong>✅ O que funciona sem IA</strong>
+    Registo, login, explorar destinos, criar viagens, gerir favoritos, questionário de perfil, navbar, chat (widget aparece mas IA não responde).
+  </div>
+</div>
+
+<!-- 10. COMO INICIAR -->
+<div class="page page-break">
+  <h2>10. Como Iniciar o Projecto (Sessão de Desenvolvimento)</h2>
+
+  <div class="alert alert-warning">
+    <strong>⚠️ Executar SEMPRE nesta ordem ao início de cada sessão</strong>
+    O SSH tunnel não persiste entre reinícios do computador ou fecho de terminal.
+  </div>
+
+  <h3>Passo 1 — Abrir o túnel SSH para a base de dados</h3>
+<pre>ssh -i C:/Users/Asus/.ssh/id_ed25519 -f -N -L 5433:localhost:5433 root@187.124.39.3</pre>
+  <p>Este comando corre em background (<code>-f -N</code>). Só precisas de correr uma vez por sessão.</p>
+
+  <h3>Passo 2 — Iniciar o Backend</h3>
+<pre>cd C:\Users\Asus\Desktop\Aventra\backend
+npm run dev</pre>
+  <p>O backend inicia em <code>http://localhost:3001</code>. Usa nodemon — reinicia automaticamente quando alteras ficheiros <code>.ts</code>.</p>
+
+  <div class="alert alert-warning">
+    <strong>⚠️ Atenção</strong> Se alterares o <code>.env</code>, o nodemon <strong>não reinicia</strong> automaticamente — tens de matar o processo e correr <code>npm run dev</code> de novo.
+  </div>
+
+  <h3>Passo 3 — Iniciar o Frontend (noutro terminal)</h3>
+<pre>cd C:\Users\Asus\Desktop\Aventra\frontend
+npm run dev</pre>
+  <p>Frontend disponível em <code>http://localhost:5173</code>. O Vite faz proxy das chamadas <code>/api/*</code> para <code>localhost:3001</code>.</p>
+
+  <h3>Verificar se tudo está a funcionar</h3>
+<pre># Verificar backend
+curl http://localhost:3001/health
+
+# Verificar base de dados (deve retornar destinos)
+curl http://localhost:3001/api/v1/destinations/featured</pre>
+
+  <h3>Forçar paragem do backend (se porta 3001 em uso)</h3>
+  <p>Correr no PowerShell:</p>
+<pre>Get-NetTCPConnection -LocalPort 3001 | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }</pre>
+</div>
+
+<!-- 11. PROBLEMAS CONHECIDOS -->
+<div class="page page-break">
+  <h2>11. Problemas Conhecidos e Soluções</h2>
+
+  <table>
+    <tr><th>Problema</th><th>Causa</th><th>Solução</th></tr>
+    <tr>
+      <td>"Erro interno do servidor" em todos os endpoints</td>
+      <td>SSH tunnel fechado — BD inacessível</td>
+      <td>Correr o comando SSH tunnel (Passo 1)</td>
+    </tr>
+    <tr>
+      <td>Backend não reinicia após alterar .env</td>
+      <td>Nodemon só observa ficheiros .ts</td>
+      <td>Matar processo e reiniciar manualmente</td>
+    </tr>
+    <tr>
+      <td>Login não mostra erro, apenas recarrega</td>
+      <td>Interceptor 401 fazia redirect mesmo sem token</td>
+      <td>✅ Corrigido — só redireciona se havia token activo</td>
+    </tr>
+    <tr>
+      <td>"Credenciais inválidas" no login</td>
+      <td>Conta criada quando BD estava offline — não foi guardada</td>
+      <td>Registar de novo em /registar</td>
+    </tr>
+    <tr>
+      <td>IA retorna 503 "Serviço temporariamente indisponível"</td>
+      <td>CLAUDE_API_KEY inválida ou sem créditos</td>
+      <td>Verificar chave no .env e adicionar créditos em console.anthropic.com</td>
+    </tr>
+    <tr>
+      <td>@types/express v5: req.params como string | string[]</td>
+      <td>Breaking change no v5</td>
+      <td>✅ Usar sempre <code>req.params['id'] as string</code></td>
+    </tr>
+    <tr>
+      <td>Prisma JSON fields rejeitam unknown[]</td>
+      <td>Tipo incompatível com InputJsonValue</td>
+      <td>✅ Cast: <code>data as Prisma.InputJsonValue[]</code></td>
+    </tr>
+    <tr>
+      <td>pkill não mata processos Node no Windows</td>
+      <td>pkill é comando Linux</td>
+      <td>✅ Usar PowerShell: Get-NetTCPConnection | Stop-Process</td>
+    </tr>
+  </table>
+
+  <h3>Decisões Técnicas Importantes</h3>
+  <table>
+    <tr><th>Decisão</th><th>Razão</th></tr>
+    <tr><td>Node.js + Express em vez de Hono.js</td><td>Pedido explícito (conforme PDF de especificação)</td></tr>
+    <tr><td>BD no VPS em vez de local</td><td>Sem PostgreSQL nem Docker instalados na máquina de desenvolvimento</td></tr>
+    <tr><td>JWT_EXPIRES_IN hardcoded como '7d'</td><td>jwt.sign() com variável de ambiente falha nos tipos do TypeScript</td></tr>
+    <tr><td>Tailwind v4 com @tailwindcss/vite</td><td>Usa @import "tailwindcss" e @theme {} — sintaxe diferente do v3</td></tr>
+    <tr><td>Seed com IDs derivados do nome</td><td>Permite upsert idempotente (re-executar seed não duplica dados)</td></tr>
+    <tr><td>Rotas /destinos públicas</td><td>Melhor para SEO e partilha de links</td></tr>
+  </table>
+</div>
+
+<!-- 12. PRÓXIMOS PASSOS -->
+<div class="page page-break">
+  <h2>12. Próximos Passos</h2>
+
+  <h3>🔴 Imediato (bloqueador)</h3>
+  <ul>
+    <li>Adicionar créditos em <strong>console.anthropic.com → Plans &amp; Billing</strong> ($5 mínimo)</li>
+    <li>Testar todas as funcionalidades de IA após adicionar créditos</li>
+  </ul>
+
+  <h3>🟡 A Curto Prazo</h3>
+  <ul>
+    <li>Criar página <code>/pesquisar</code> — pesquisa inteligente com IA (destinos + viagens + playlists)</li>
+    <li>Criar página <code>/perfil</code> — ver e editar dados do utilizador e perfil de viajante</li>
+    <li>Criar página <code>/recomendacoes</code> — página dedicada às sugestões da IA</li>
+    <li>Testar questionário completo de perfil e determinação de tipo de viajante</li>
+    <li>Testar geração de roteiro IA numa viagem</li>
+  </ul>
+
+  <h3>🟢 Deploy em Produção</h3>
+  <ul>
+    <li>Backend → VPS <code>187.124.39.3</code> (systemd service como eterdash)</li>
+    <li>Frontend → Vercel ou <code>npm run build</code> + scp para VPS</li>
+    <li>Configurar Traefik para domínio (ex: aventra.etergrowth.com)</li>
+    <li>Variáveis de ambiente de produção (JWT_SECRET forte, NODE_ENV=production)</li>
+    <li>Sem SSH tunnel em produção — BD na mesma rede da VPS</li>
+  </ul>
+
+  <h3>🔵 Melhorias Futuras</h3>
+  <ul>
+    <li>Upload de foto de perfil</li>
+    <li>Partilha de viagens / playlists com link público</li>
+    <li>Integração com Google Maps para localizações no roteiro</li>
+    <li>Exportar roteiro para PDF</li>
+    <li>Notificações push antes da viagem</li>
+    <li>App mobile (React Native com a mesma API)</li>
+  </ul>
+
+  <div class="alert alert-info" style="margin-top:32px;">
+    <strong>📁 Localização do Projecto</strong>
+    <br>Backend: <code>C:\Users\Asus\Desktop\Aventra\backend</code>
+    <br>Frontend: <code>C:\Users\Asus\Desktop\Aventra\frontend</code>
+    <br>Documentação: <code>C:\Users\Asus\Desktop\Aventra\AVENTRA_DOCUMENTACAO.html</code>
+  </div>
+
+  <div class="footer">
+    Aventra — Documentação gerada em Junho 2026 · Bianca Amanajás · Eter Growth
+  </div>
+</div>
+
+</body>
+</html>

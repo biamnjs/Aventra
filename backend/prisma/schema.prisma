@@ -1,0 +1,214 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  avatar    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  profile       TravelerProfile?
+  trips         Trip[]
+  playlists     Playlist[]
+  favorites     Favorite[]
+  reviews       Review[]
+  notifications Notification[]
+
+  @@map("users")
+}
+
+model TravelerProfile {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  budget            Float?
+  accommodationType String?
+  favoriteCountries String[]
+  musicGenres       String[]
+  foodStyle         String[]
+  activities        String[]
+  climateType       String?
+  travelFrequency   String?
+  travelStyle       String?
+  photography       Boolean  @default(false)
+  socialMedia       Boolean  @default(false)
+  adventureLevel    String?
+  travelerType      String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("traveler_profiles")
+}
+
+model Destination {
+  id          String   @id @default(cuid())
+  name        String
+  country     String
+  description String
+  imageUrl    String?
+  climate     String?
+  tags        String[]
+  latitude    Float?
+  longitude   Float?
+  featured    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  trips    Trip[]
+  hotels   Hotel[]
+  flights  Flight[]
+  reviews  Review[]
+
+  @@map("destinations")
+}
+
+model Trip {
+  id            String      @id @default(cuid())
+  userId        String
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  destinationId String
+  destination   Destination @relation(fields: [destinationId], references: [id])
+  title         String
+  startDate     DateTime?
+  endDate       DateTime?
+  status        TripStatus  @default(PLANNING)
+  budget        Float?
+  notes         String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  itinerary ItineraryDay[]
+  playlists Playlist[]
+
+  @@map("trips")
+}
+
+enum TripStatus {
+  PLANNING
+  BOOKED
+  ONGOING
+  COMPLETED
+  CANCELLED
+}
+
+model ItineraryDay {
+  id         String   @id @default(cuid())
+  tripId     String
+  trip       Trip     @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  dayNumber  Int
+  activities Json
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([tripId, dayNumber])
+  @@map("itinerary_days")
+}
+
+model Hotel {
+  id            String      @id @default(cuid())
+  name          String
+  destinationId String
+  destination   Destination @relation(fields: [destinationId], references: [id])
+  description   String?
+  pricePerNight Float?
+  rating        Float?
+  imageUrl      String?
+  amenities     String[]
+  latitude      Float?
+  longitude     Float?
+  createdAt     DateTime    @default(now())
+
+  @@map("hotels")
+}
+
+model Flight {
+  id            String      @id @default(cuid())
+  origin        String
+  destinationId String
+  destination   Destination @relation(fields: [destinationId], references: [id])
+  airline       String
+  price         Float
+  departureTime DateTime
+  arrivalTime   DateTime
+  flightClass   String      @default("economy")
+  createdAt     DateTime    @default(now())
+
+  @@map("flights")
+}
+
+model Playlist {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tripId    String?
+  trip      Trip?    @relation(fields: [tripId], references: [id])
+  name      String
+  type      PlaylistType
+  songs     Json
+  createdAt DateTime @default(now())
+
+  @@map("playlists")
+}
+
+enum PlaylistType {
+  TRAVEL
+  STORIES
+  REELS
+  SUNSET
+  ROMANTIC
+  ADVENTURE
+}
+
+model Favorite {
+  id          String       @id @default(cuid())
+  userId      String
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type        FavoriteType
+  referenceId String
+  metadata    Json?
+  createdAt   DateTime     @default(now())
+
+  @@unique([userId, type, referenceId])
+  @@map("favorites")
+}
+
+enum FavoriteType {
+  DESTINATION
+  HOTEL
+  RESTAURANT
+  ITINERARY
+  PLAYLIST
+}
+
+model Review {
+  id            String      @id @default(cuid())
+  userId        String
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  destinationId String
+  destination   Destination @relation(fields: [destinationId], references: [id])
+  rating        Int
+  content       String?
+  createdAt     DateTime    @default(now())
+
+  @@map("reviews")
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@map("notifications")
+}
