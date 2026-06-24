@@ -44,7 +44,7 @@ const moodColors: Record<string, string> = {
   melancólica: 'bg-purple-100 text-purple-700',
 };
 
-function SongRow({ song, index }: { song: Playlist['songs'][number]; index: number }) {
+function SongRow({ song }: { song: Playlist['songs'][number]; index: number }) {
   const { track, isPlaying, setTrack, togglePlay } = usePlayerStore();
   const [loading, setLoading] = useState(false);
   const [unavailable, setUnavailable] = useState(false);

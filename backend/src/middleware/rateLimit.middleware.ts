@@ -1,4 +1,4 @@
-import rateLimit from 'express-rate-limit';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 
 const json429 = (retryAfter: number) => ({
   success: false,
@@ -22,9 +22,8 @@ export const aiRateLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 20,
   keyGenerator: (req) => {
-    // usa userId se autenticado, senão IP
     const authReq = req as { userId?: string };
-    return authReq.userId ?? req.ip ?? 'unknown';
+    return authReq.userId ?? ipKeyGenerator(req.ip ?? '127.0.0.1');
   },
   standardHeaders: true,
   legacyHeaders: false,
