@@ -149,11 +149,12 @@ export function TravelerQuestionnaire() {
   const save = useMutation({
     mutationFn: async (data: ProfileData) => {
       const res = await api.post('/users/traveler-profile', data);
-      await api.post('/ai/traveler-type');
       return res.data.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['me'] });
+      // fire-and-forget: não bloqueia a navegação se a IA estiver em baixo
+      api.post('/ai/traveler-type').catch(() => undefined);
       navigate('/painel');
     },
     onError: () => {
