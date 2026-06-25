@@ -1,10 +1,13 @@
+import { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
-  MapPin, ArrowLeft, Heart, Star, Calendar, Plus, Music, Globe
+  MapPin, ArrowLeft, Heart, Star, Calendar, Plus, Music, Globe, ShieldCheck, ExternalLink
 } from 'lucide-react';
 import { useDestination } from '../hooks/useDestinations';
 import { useToggleFavorite, useIsFavorited } from '../hooks/useFavorites';
 import { useAuthStore } from '../store/authStore';
+import { useVisaInfo, useSavePassport, type VisaStatus } from '../hooks/useVisaInfo';
+import { COUNTRIES } from '../data/countries';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 
@@ -15,14 +18,34 @@ const climateEmojis: Record<string, string> = {
   frio: '❄️',
 };
 
+const visaStatusConfig: Record<VisaStatus, { label: string; color: string }> = {
+  free:       { label: 'Sem visto',        color: 'bg-green-100 text-green-800' },
+  voa:        { label: 'Visto na chegada', color: 'bg-yellow-100 text-yellow-800' },
+  evisa:      { label: 'e-Visto online',   color: 'bg-blue-100 text-blue-800' },
+  required:   { label: 'Visto obrigatório',color: 'bg-red-100 text-red-800' },
+  restricted: { label: 'Acesso restrito',  color: 'bg-gray-800 text-white' },
+  domestic:   { label: 'País de origem',   color: 'bg-brand-100 text-brand-800' },
+};
+
 export function DestinationDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
 
   const { data: destination, isLoading } = useDestination(id!);
   const { data: favorited } = useIsFavorited('DESTINATION', id!);
   const toggleFavorite = useToggleFavorite();
+
+  const [passport, setPassport] = useState<string>(user?.profile?.passportCountry ?? '');
+  const { data: visaInfo, isLoading: visaLoading } = useVisaInfo(id!, passport || undefined);
+  const savePassport = useSavePassport();
+
+  function handlePassportChange(code: string) {
+    setPassport(code);
+    if (code && isAuthenticated) {
+      savePassport.mutate(code);
+    }
+  }
 
   async function handleFavorite() {
     if (!isAuthenticated) { navigate('/entrar'); return; }
@@ -162,6 +185,61 @@ export function DestinationDetail() {
                 </div>
               )}
             </div>
+          </Card>
+
+          {/* Visa requirements card */}
+          <Card className="p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <ShieldCheck className="w-4 h-4 text-brand-500" />
+              <h3 className="font-semibold text-gray-900 text-sm">Requisitos de entrada</h3>
+            </div>
+            <div className="mb-3">
+              <label className="block text-xs text-gray-500 mb-1">O meu passaporte</label>
+              <select
+                value={passport}
+                onChange={(e) => handlePassportChange(e.target.value)}
+                className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-brand-400"
+              >
+                <option value="">Selecionar país</option>
+                {COUNTRIES.map((c) => (
+                  <option key={c.code} value={c.code}>{c.name}</option>
+                ))}
+              </select>
+            </div>
+            {passport && (
+              visaLoading ? (
+                <div className="h-16 bg-gray-100 rounded-lg animate-pulse" />
+              ) : visaInfo ? (
+                <div className="space-y-2">
+                  <span className={`inline-block text-xs font-semibold px-2.5 py-1 rounded-full ${visaStatusConfig[visaInfo.status].color}`}>
+                    {visaStatusConfig[visaInfo.status].label}
+                  </span>
+                  <div className="text-xs text-gray-600 space-y-1">
+                    {visaInfo.days && visaInfo.status !== 'domestic' && (
+                      <p>Estadia máxima: <strong>{visaInfo.days} dias</strong></p>
+                    )}
+                    {visaInfo.cost && (
+                      <p>Custo: <strong>{visaInfo.cost}</strong></p>
+                    )}
+                    {visaInfo.notes && <p className="text-gray-500 italic">{visaInfo.notes}</p>}
+                  </div>
+                  {visaInfo.link && (
+                    <a
+                      href={visaInfo.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1 text-xs text-brand-500 hover:underline mt-1"
+                    >
+                      <ExternalLink className="w-3 h-3" />
+                      Informação oficial
+                    </a>
+                  )}
+                </div>
+              ) : null
+            )}
+            {!passport && (
+              <p className="text-xs text-gray-400">Seleciona o teu passaporte para ver os requisitos de visto.</p>
+            )}
           </Card>
 
           <Link to={`/viagens/nova?destino=${destination.id}&nome=${encodeURIComponent(destination.name)}`}>

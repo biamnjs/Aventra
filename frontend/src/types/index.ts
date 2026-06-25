@@ -22,6 +22,7 @@ export interface TravelerProfile {
   socialMedia: boolean;
   adventureLevel?: string;
   travelerType?: string;
+  passportCountry?: string;
 }
 
 export interface Destination {
@@ -35,6 +36,7 @@ export interface Destination {
   latitude?: number;
   longitude?: number;
   featured: boolean;
+  countryCode?: string;
 }
 
 export interface Trip {

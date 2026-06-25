@@ -17,6 +17,7 @@ const profileSchema = z.object({
   socialMedia: z.boolean().optional(),
   adventureLevel: z.enum(['aventura', 'conforto', 'equilibrado']).optional(),
   travelerType: z.string().optional(),
+  passportCountry: z.string().length(2).toUpperCase().optional(),
 });
 
 export async function updateProfile(req: AuthRequest, res: Response, next: NextFunction) {

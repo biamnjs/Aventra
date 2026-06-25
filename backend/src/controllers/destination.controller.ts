@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import * as destinationService from '../services/destination.service';
+import { getVisaInfo } from '../data/visa-data';
 
 export async function listDestinations(req: Request, res: Response, next: NextFunction) {
   try {
@@ -45,6 +46,26 @@ export async function searchDestinations(req: Request, res: Response, next: Next
     }
     const destinations = await destinationService.searchDestinations(q);
     res.json({ success: true, data: destinations });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function getDestinationVisaInfo(req: Request, res: Response, next: NextFunction) {
+  try {
+    const destination = await destinationService.getDestinationById(req.params['id'] as string);
+    const passport = (req.query['passport'] as string | undefined)?.toUpperCase();
+    if (!passport || passport.length !== 2) {
+      res.status(400).json({ success: false, error: 'Parâmetro passport (ISO alpha-2) obrigatório' });
+      return;
+    }
+    const countryCode = (destination as unknown as { countryCode?: string }).countryCode;
+    if (!countryCode) {
+      res.json({ success: true, data: { status: 'required', notes: 'Código de país não disponível para este destino', link: `https://www.passportindex.org/comparebyPassport.php?p1=${passport.toLowerCase()}` } });
+      return;
+    }
+    const visaInfo = getVisaInfo(countryCode, passport);
+    res.json({ success: true, data: visaInfo });
   } catch (err) {
     next(err);
   }

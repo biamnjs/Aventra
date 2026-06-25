@@ -43,6 +43,7 @@ model TravelerProfile {
   socialMedia       Boolean  @default(false)
   adventureLevel    String?
   travelerType      String?
+  passportCountry   String?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
@@ -60,6 +61,7 @@ model Destination {
   latitude    Float?
   longitude   Float?
   featured    Boolean  @default(false)
+  countryCode String?
   createdAt   DateTime @default(now())
 
   trips    Trip[]
