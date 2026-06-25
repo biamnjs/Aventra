@@ -144,6 +144,8 @@ export function TravelerQuestionnaire() {
   });
   const [extras, setExtras] = useState({ photography: false, socialMedia: false });
 
+  const [saveError, setSaveError] = useState('');
+
   const save = useMutation({
     mutationFn: async (data: ProfileData) => {
       const res = await api.post('/users/traveler-profile', data);
@@ -153,6 +155,9 @@ export function TravelerQuestionnaire() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['me'] });
       navigate('/painel');
+    },
+    onError: () => {
+      setSaveError('Erro ao guardar perfil. Tenta novamente.');
     },
   });
 
@@ -190,7 +195,12 @@ export function TravelerQuestionnaire() {
 
   async function handleNext() {
     if (isLast) {
-      await save.mutateAsync({ ...profile, ...extras });
+      setSaveError('');
+      // accommodationType was used as a budget-tier placeholder — strip it before sending
+      // the numeric budget field already captures that selection
+      const { accommodationType, ...cleanProfile } = profile;
+      void accommodationType;
+      await save.mutateAsync({ ...cleanProfile, ...extras });
     } else {
       setCurrentStep((s) => s + 1);
     }
@@ -277,7 +287,11 @@ export function TravelerQuestionnaire() {
             </div>
           )}
 
-          <div className="flex gap-3 mt-8">
+          {saveError && (
+            <p className="mt-6 text-sm text-red-500 bg-red-50 rounded-xl px-4 py-3">{saveError}</p>
+          )}
+
+          <div className="flex gap-3 mt-4">
             {currentStep > 0 && (
               <Button variant="secondary" onClick={() => setCurrentStep((s) => s - 1)}>
                 <ArrowLeft className="w-4 h-4" />
