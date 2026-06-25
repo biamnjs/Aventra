@@ -169,12 +169,36 @@ export function DestinationDetail() {
 
         {/* Sidebar */}
         <div className="space-y-4">
+          {/* Primary actions — always visible at the top */}
+          <Link to={`/viagens/nova?destino=${destination.id}&nome=${encodeURIComponent(destination.name)}`}>
+            <Button className="w-full" size="lg">
+              <Calendar className="w-4 h-4" />
+              Planear viagem
+            </Button>
+          </Link>
+
+          <div className="grid grid-cols-2 gap-2">
+            <Link to={`/playlists?destino=${encodeURIComponent(destination.name)}`}>
+              <Button variant="secondary" className="w-full">
+                <Music className="w-4 h-4" />
+                Playlist
+              </Button>
+            </Link>
+            <Link to={`/viagens/nova?destino=${destination.id}`}>
+              <Button variant="ghost" className="w-full">
+                <Plus className="w-4 h-4" />
+                À viagem
+              </Button>
+            </Link>
+          </div>
+
+          {/* Quick info */}
           <Card className="p-5">
-            <h3 className="font-semibold text-gray-900 mb-4">Informação rápida</h3>
-            <div className="space-y-3 text-sm">
+            <h3 className="font-semibold text-gray-900 mb-3 text-sm">Informação rápida</h3>
+            <div className="space-y-2 text-sm">
               {destination.climate && (
                 <div className="flex items-center gap-2 text-gray-600">
-                  <span className="text-lg">{climateEmojis[destination.climate] ?? '🌍'}</span>
+                  <span className="text-base">{climateEmojis[destination.climate] ?? '🌍'}</span>
                   <span>Clima <strong>{destination.climate}</strong></span>
                 </div>
               )}
@@ -187,7 +211,7 @@ export function DestinationDetail() {
             </div>
           </Card>
 
-          {/* Visa requirements card */}
+          {/* Visa requirements */}
           <Card className="p-5">
             <div className="flex items-center gap-2 mb-3">
               <ShieldCheck className="w-4 h-4 text-brand-500" />
@@ -208,7 +232,7 @@ export function DestinationDetail() {
             </div>
             {passport && (
               visaLoading ? (
-                <div className="h-16 bg-gray-100 rounded-lg animate-pulse" />
+                <div className="h-12 bg-gray-100 rounded-lg animate-pulse" />
               ) : visaInfo ? (
                 <div className="space-y-2">
                   <span className={`inline-block text-xs font-semibold px-2.5 py-1 rounded-full ${visaStatusConfig[visaInfo.status].color}`}>
@@ -241,27 +265,6 @@ export function DestinationDetail() {
               <p className="text-xs text-gray-400">Seleciona o teu passaporte para ver os requisitos de visto.</p>
             )}
           </Card>
-
-          <Link to={`/viagens/nova?destino=${destination.id}&nome=${encodeURIComponent(destination.name)}`}>
-            <Button className="w-full" size="lg">
-              <Calendar className="w-4 h-4" />
-              Planear viagem
-            </Button>
-          </Link>
-
-          <Link to={`/playlists?destino=${encodeURIComponent(destination.name)}`}>
-            <Button variant="secondary" className="w-full">
-              <Music className="w-4 h-4" />
-              Gerar playlist
-            </Button>
-          </Link>
-
-          <Link to={`/viagens/nova?destino=${destination.id}`}>
-            <Button variant="ghost" className="w-full">
-              <Plus className="w-4 h-4" />
-              Adicionar à viagem
-            </Button>
-          </Link>
         </div>
       </div>
     </div>
