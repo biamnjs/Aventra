@@ -9,10 +9,9 @@ import { useToggleFavorite, useIsFavorited } from '../hooks/useFavorites';
 import { useAuthStore } from '../store/authStore';
 import { useVisaInfo, useSavePassport, type VisaStatus } from '../hooks/useVisaInfo';
 import { COUNTRIES } from '../data/countries';
-import { Button } from '../components/ui/Button';
 import type { Destination, TravelerProfile } from '../types';
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
 const climateEmoji: Record<string, string> = {
   tropical: '🌴', temperado: '🍂', árido: '☀️', frio: '❄️',
@@ -57,12 +56,12 @@ function getWeather(climate?: string) {
 
 function getBestSeason(climate?: string) {
   const map: Record<string, { months: string; desc: string }> = {
-    tropical: { months: 'Nov — Mar', desc: 'Estação seca, menos chuva' },
-    temperado: { months: 'Mai — Set', desc: 'Verão agradável para turismo' },
-    árido:    { months: 'Out — Abr', desc: 'Temperaturas mais amenas' },
-    frio:     { months: 'Jun — Ago', desc: 'Verão suave com dias longos' },
+    tropical: { months: 'Nov–Mar', desc: 'Estação seca, menos chuva' },
+    temperado: { months: 'Mai–Set', desc: 'Verão agradável para turismo' },
+    árido:    { months: 'Out–Abr', desc: 'Temperaturas mais amenas' },
+    frio:     { months: 'Jun–Ago', desc: 'Verão suave com dias longos' },
   };
-  return map[climate ?? ''] ?? { months: 'Abr — Out', desc: 'Primavera e verão' };
+  return map[climate ?? ''] ?? { months: 'Abr–Out', desc: 'Primavera e verão' };
 }
 
 function computeCompatibility(
@@ -84,32 +83,33 @@ function computeCompatibility(
   (profile.activities ?? []).forEach(act => {
     if (destination.tags.includes(act)) {
       pts += 10;
-      if (reasons.length < 4 && tagMap[act]) reasons.push(tagMap[act]!);
+      if (reasons.length < 3 && tagMap[act]) reasons.push(tagMap[act]!);
     }
   });
   if (profile.travelStyle && destination.tags.includes(profile.travelStyle)) {
     pts += 15;
-    if (reasons.length < 4 && tagMap[profile.travelStyle]) reasons.push(tagMap[profile.travelStyle]!);
+    if (reasons.length < 3 && tagMap[profile.travelStyle]) reasons.push(tagMap[profile.travelStyle]!);
   }
   if (destination.featured) pts += 5;
   if (reasons.length < 2) destination.tags.slice(0, 3).forEach(t => { if (reasons.length < 3 && tagMap[t]) reasons.push(tagMap[t]!); });
   const score = Math.min(99, Math.max(52, Math.round(52 + (pts / 70) * 47)));
-  return { score, reasons: [...new Set(reasons)].slice(0, 4) };
+  return { score, reasons: [...new Set(reasons)].slice(0, 3) };
 }
 
-// ── Sub-components ────────────────────────────────────────────────────────────
+// ── CircleProgress ────────────────────────────────────────────────────────────
 
 function CircleProgress({ value }: { value: number }) {
-  const size = 96;
-  const sw = 7;
+  const size = 120;
+  const sw = 9;
   const r = (size - sw) / 2;
   const circ = 2 * Math.PI * r;
   const offset = circ * (1 - value / 100);
   return (
-    <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
+    <div className="relative flex items-center justify-center flex-shrink-0" style={{ width: size, height: size }}>
       <svg width={size} height={size} className="-rotate-90 absolute inset-0">
         <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#ECECEC" strokeWidth={sw} />
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none"
+        <circle
+          cx={size / 2} cy={size / 2} r={r} fill="none"
           stroke="#FF6238" strokeWidth={sw}
           strokeDasharray={`${circ}`}
           strokeDashoffset={`${offset}`}
@@ -117,23 +117,35 @@ function CircleProgress({ value }: { value: number }) {
           style={{ transition: 'stroke-dashoffset 1.2s ease-out' }}
         />
       </svg>
-      <span className="relative text-xl font-bold" style={{ color: '#1F2937' }}>{value}%</span>
+      <span className="relative font-[800] text-[#1F2937]" style={{ fontSize: 36 }}>{value}%</span>
     </div>
   );
 }
 
-// ── Main Component ────────────────────────────────────────────────────────────
+// ── Constants ─────────────────────────────────────────────────────────────────
 
-const CARD_STYLE: React.CSSProperties = {
+const CARD: React.CSSProperties = {
   background: '#FFFFFF',
   borderRadius: 18,
   border: '1px solid #ECECEC',
-  boxShadow: '0 10px 30px rgba(0,0,0,0.06)',
+  boxShadow: '0 8px 30px rgba(0,0,0,0.04)',
 };
 
-const SECTION_TITLE = 'font-bold text-[#1F2937] mb-4';
+const GLASS: React.CSSProperties = {
+  height: 70,
+  padding: 14,
+  borderRadius: 14,
+  background: 'rgba(255,255,255,0.16)',
+  backdropFilter: 'blur(18px)',
+  border: '1px solid rgba(255,255,255,0.18)',
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'space-between',
+};
 
 type HotelItem = { id: string; name: string; rating?: number; pricePerNight?: number; imageUrl?: string };
+
+// ── Page ──────────────────────────────────────────────────────────────────────
 
 export function DestinationDetail() {
   const { id } = useParams<{ id: string }>();
@@ -164,18 +176,19 @@ export function DestinationDetail() {
   // ── Loading ────────────────────────────────────────────────────────────────
   if (isLoading) {
     return (
-      <div style={{ background: '#FAFAFA', minHeight: '100vh' }}>
-        <div className="max-w-[1320px] mx-auto px-8 py-8 animate-pulse">
-          <div className="h-5 w-16 bg-gray-200 rounded mb-6" />
-          <div className="h-[420px] bg-gray-200 rounded-[24px] mb-8" />
-          <div className="grid gap-8" style={{ gridTemplateColumns: '1fr 380px' }}>
-            <div className="space-y-5">
-              <div className="h-48 bg-gray-200 rounded-[18px]" />
-              <div className="h-24 bg-gray-200 rounded-[18px]" />
+      <div className="min-h-screen" style={{ background: '#FAFAFA' }}>
+        <div className="max-w-[1440px] mx-auto px-8 py-5 animate-pulse">
+          <div className="h-4 w-14 bg-gray-200 rounded mb-5" />
+          <div className="bg-gray-200 rounded-[18px] mb-6" style={{ height: 360 }} />
+          <div className="flex flex-col lg:grid gap-6" style={{ gridTemplateColumns: '2fr 420px' }}>
+            <div className="space-y-6">
+              <div className="bg-gray-200 rounded-[18px]" style={{ height: 220 }} />
+              <div className="h-20 bg-gray-200 rounded-[18px]" />
             </div>
-            <div className="space-y-4">
-              <div className="h-56 bg-gray-200 rounded-[18px]" />
-              <div className="h-14 bg-gray-200 rounded-xl" />
+            <div className="space-y-5">
+              <div className="bg-gray-200 rounded-[18px]" style={{ height: 300 }} />
+              <div className="bg-gray-200 rounded-[18px]" style={{ height: 130 }} />
+              <div className="bg-gray-200 rounded-[18px]" style={{ height: 120 }} />
             </div>
           </div>
         </div>
@@ -186,7 +199,7 @@ export function DestinationDetail() {
   // ── Not found ──────────────────────────────────────────────────────────────
   if (!destination) {
     return (
-      <div style={{ background: '#FAFAFA', minHeight: '100vh' }} className="flex flex-col items-center justify-center gap-3">
+      <div className="min-h-screen flex flex-col items-center justify-center gap-3" style={{ background: '#FAFAFA' }}>
         <Globe className="w-12 h-12 text-gray-300" />
         <p className="text-[#6B7280] text-lg">Destino não encontrado</p>
         <Link to="/destinos" className="text-brand-500 text-sm hover:underline">← Voltar aos destinos</Link>
@@ -201,51 +214,41 @@ export function DestinationDetail() {
   const compat = computeCompatibility(destination, user?.profile);
 
   return (
-    <div style={{ background: '#FAFAFA', minHeight: '100vh' }}>
-      <div className="max-w-[1320px] mx-auto px-4 sm:px-8 py-8">
+    <div className="min-h-screen" style={{ background: '#FAFAFA' }}>
+      <div className="max-w-[1440px] mx-auto pb-10" style={{ paddingLeft: 32, paddingRight: 32, paddingTop: 20 }}>
 
-        {/* ── Back ──────────────────────────────────────────────────────── */}
+        {/* ── Back ─────────────────────────────────────────────────────── */}
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-sm text-[#6B7280] hover:text-[#1F2937] mb-6 transition-colors duration-[250ms]"
+          className="flex items-center gap-2 text-sm text-[#6B7280] hover:text-[#1F2937] mb-5 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           Voltar
         </button>
 
-        {/* ── Hero ──────────────────────────────────────────────────────── */}
+        {/* ── HERO ─────────────────────────────────────────────────────── */}
         <div
-          className="relative overflow-hidden mb-8"
-          style={{ height: 'clamp(280px, 35vw, 420px)', borderRadius: 24 }}
+          className="relative overflow-hidden mb-6"
+          style={{ height: 360, borderRadius: 18 }}
         >
-          {destination.imageUrl ? (
-            <img
-              src={destination.imageUrl}
-              alt={destination.name}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div className="w-full h-full bg-gradient-to-br from-brand-400 to-brand-600" />
-          )}
+          {destination.imageUrl
+            ? <img src={destination.imageUrl} alt={destination.name} className="w-full h-full object-cover" />
+            : <div className="w-full h-full bg-gradient-to-br from-brand-400 to-brand-600" />
+          }
 
-          {/* Gradient overlay */}
-          <div className="absolute inset-0" style={{
-            background: 'linear-gradient(to top, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.08) 100%)'
-          }} />
-
-          {/* Country badge — top left */}
-          <div className="absolute top-5 left-6 flex items-center gap-1.5 backdrop-blur-sm bg-white/15 border border-white/25 text-white text-sm font-medium px-3 py-1.5 rounded-full">
-            <MapPin className="w-3.5 h-3.5" />
-            {destination.country}
-          </div>
+          {/* Overlay */}
+          <div
+            className="absolute inset-0"
+            style={{ background: 'linear-gradient(180deg, rgba(0,0,0,0.10) 0%, rgba(0,0,0,0.55) 100%)' }}
+          />
 
           {/* Favorite — top right */}
           <button
             onClick={handleFavorite}
             disabled={toggleFavorite.isPending}
-            className="absolute top-4 right-5 flex items-center justify-center rounded-full backdrop-blur-sm transition-all duration-[250ms] disabled:opacity-60"
+            className="absolute top-4 right-5 flex items-center justify-center rounded-full backdrop-blur-sm transition-all duration-200 disabled:opacity-60"
             style={{
-              width: 52, height: 52,
+              width: 48, height: 48,
               background: favorited ? '#FF6238' : 'rgba(255,255,255,0.18)',
               border: '1.5px solid rgba(255,255,255,0.28)',
             }}
@@ -254,110 +257,101 @@ export function DestinationDetail() {
           </button>
 
           {/* Bottom content */}
-          <div className="absolute bottom-0 left-0 right-0 px-6 pb-6 pt-16">
+          <div
+            className="absolute inset-0 flex flex-col justify-end"
+            style={{ padding: 32 }}
+          >
             <h1
-              className="font-bold text-white leading-none mb-1"
-              style={{ fontSize: 'clamp(36px, 5vw, 64px)' }}
+              className="text-white font-[800] leading-none"
+              style={{ fontSize: 60, letterSpacing: -1 }}
             >
               {destination.name}
             </h1>
-            <p className="text-white/70 text-sm mb-5 flex items-center gap-1.5">
-              <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-              <span className="font-medium text-white/90">4.8</span>
-              <span className="text-white/50 mx-1">·</span>
-              {destination.country}
-            </p>
+
+            {/* Rating row */}
+            <div className="flex items-center mt-3" style={{ gap: 12 }}>
+              <Star className="fill-amber-400 text-amber-400" style={{ width: 16, height: 16 }} />
+              <span className="text-white font-semibold" style={{ fontSize: 17 }}>4.8</span>
+              <span className="text-white/50">·</span>
+              <MapPin className="text-white/70" style={{ width: 14, height: 14 }} />
+              <span className="text-white/80" style={{ fontSize: 17 }}>{destination.country}</span>
+            </div>
 
             {/* Glass info cards */}
-            <div className="flex flex-wrap gap-2.5">
+            <div className="flex flex-wrap" style={{ gap: 16, marginTop: 28 }}>
               {destination.climate && (
-                <div className="backdrop-blur-sm bg-white/15 border border-white/20 rounded-2xl px-4 py-2.5 text-white">
-                  <p className="text-white/60 text-[11px] uppercase tracking-wide mb-0.5">Clima</p>
-                  <p className="text-sm font-semibold">{climateEmoji[destination.climate]} {destination.climate}</p>
+                <div style={GLASS} className="text-white">
+                  <p className="uppercase tracking-wide" style={{ fontSize: 11, opacity: 0.8 }}>Clima</p>
+                  <p className="font-bold leading-none" style={{ fontSize: 20 }}>
+                    {climateEmoji[destination.climate]} {destination.climate}
+                  </p>
                 </div>
               )}
-              <div className="backdrop-blur-sm bg-white/15 border border-white/20 rounded-2xl px-4 py-2.5 text-white">
-                <p className="text-white/60 text-[11px] uppercase tracking-wide mb-0.5">Orçamento/dia</p>
-                <p className="text-sm font-semibold">€{budget.min} — €{budget.max}</p>
+              <div style={GLASS} className="text-white">
+                <p className="uppercase tracking-wide" style={{ fontSize: 11, opacity: 0.8 }}>Orçamento/dia</p>
+                <p className="font-bold leading-none" style={{ fontSize: 20 }}>€{budget.min}–{budget.max}</p>
               </div>
-              <div className="backdrop-blur-sm bg-white/15 border border-white/20 rounded-2xl px-4 py-2.5 text-white">
-                <p className="text-white/60 text-[11px] uppercase tracking-wide mb-0.5">Melhor época</p>
-                <p className="text-sm font-semibold">{season.months}</p>
+              <div style={GLASS} className="text-white">
+                <p className="uppercase tracking-wide" style={{ fontSize: 11, opacity: 0.8 }}>Melhor época</p>
+                <p className="font-bold leading-none" style={{ fontSize: 20 }}>{season.months}</p>
               </div>
               {destination.climate && (
-                <div className="backdrop-blur-sm bg-white/15 border border-white/20 rounded-2xl px-4 py-2.5 text-white">
-                  <p className="text-white/60 text-[11px] uppercase tracking-wide mb-0.5">Temperatura</p>
-                  <p className="text-sm font-semibold">{weather.low}° — {weather.high}°C</p>
+                <div style={GLASS} className="text-white">
+                  <p className="uppercase tracking-wide" style={{ fontSize: 11, opacity: 0.8 }}>Temperatura</p>
+                  <p className="font-bold leading-none" style={{ fontSize: 20 }}>{weather.low}°–{weather.high}°C</p>
                 </div>
               )}
             </div>
           </div>
         </div>
 
-        {/* ── Mobile action buttons ─────────────────────────────────────── */}
-        <div className="lg:hidden space-y-3 mb-8">
-          <Link to={`/viagens/nova?destino=${destination.id}&nome=${encodeURIComponent(destination.name)}`}>
-            <Button className="w-full !rounded-xl !py-3.5 text-base" size="lg">
-              <Calendar className="w-5 h-5" />
-              Planear viagem
-            </Button>
-          </Link>
-          <div className="grid grid-cols-2 gap-3">
-            <Link to={`/playlists?destino=${encodeURIComponent(destination.name)}`} className="block">
-              <Button variant="secondary" className="w-full !rounded-xl">
-                <Music className="w-4 h-4" /> Playlist
-              </Button>
-            </Link>
-            <Link to={`/viagens/nova?destino=${destination.id}`} className="block">
-              <Button variant="ghost" className="w-full !rounded-xl">
-                <Plus className="w-4 h-4" /> À viagem
-              </Button>
-            </Link>
-          </div>
-        </div>
-
-        {/* Real two-column grid (lg+) */}
+        {/* ── TWO-COLUMN LAYOUT ─────────────────────────────────────────── */}
         <div
-          className="flex flex-col lg:grid gap-8 items-start"
-          style={{ gridTemplateColumns: 'minmax(0,1fr) 380px' } as React.CSSProperties}
+          className="flex flex-col lg:grid items-start"
+          style={{ gridTemplateColumns: '2fr 420px', gap: 24 }}
         >
+
           {/* ── LEFT COLUMN ─────────────────────────────────────────────── */}
-          <div className="space-y-6 min-w-0">
+          <div className="flex flex-col" style={{ gap: 24 }}>
 
             {/* About */}
-            <div style={CARD_STYLE} className="p-8 transition-shadow duration-[250ms] hover:shadow-[0_16px_40px_rgba(0,0,0,0.1)]">
-              <div className="flex gap-6 items-start">
-                <div className="flex-1 min-w-0">
-                  <h2 className={`text-[22px] ${SECTION_TITLE}`}>Sobre o destino</h2>
-                  <p className="text-[#6B7280] leading-relaxed text-[17px]">{destination.description}</p>
-                </div>
-                {destination.imageUrl && (
-                  <div
-                    className="hidden sm:block flex-shrink-0 rounded-2xl overflow-hidden"
-                    style={{ width: 200, height: 140 }}
-                  >
-                    <img src={destination.imageUrl} alt={destination.name} className="w-full h-full object-cover" />
-                  </div>
-                )}
+            <div
+              style={{ ...CARD, height: 220, padding: 28 }}
+              className="flex items-center justify-between gap-6 overflow-hidden"
+            >
+              <div className="flex-1 min-w-0 overflow-hidden">
+                <h2 className="font-bold text-[#1F2937] mb-3" style={{ fontSize: 36 }}>
+                  Sobre o destino
+                </h2>
+                <p
+                  className="text-[#6B7280] line-clamp-3"
+                  style={{ fontSize: 18, lineHeight: 1.7, maxWidth: 560 }}
+                >
+                  {destination.description}
+                </p>
               </div>
+              {destination.imageUrl && (
+                <div
+                  className="flex-shrink-0 overflow-hidden"
+                  style={{ width: 260, height: 140, borderRadius: 14 }}
+                >
+                  <img src={destination.imageUrl} alt={destination.name} className="w-full h-full object-cover" />
+                </div>
+              )}
             </div>
 
             {/* Tags */}
             {destination.tags.length > 0 && (
-              <div style={CARD_STYLE} className="p-8">
-                <h2 className={`text-[22px] ${SECTION_TITLE}`}>Ideal para</h2>
-                <div className="flex flex-wrap gap-3">
+              <div style={{ ...CARD, padding: 24 }}>
+                <h2 className="font-bold text-[#1F2937] mb-4" style={{ fontSize: 34 }}>Ideal para</h2>
+                <div className="flex flex-wrap" style={{ gap: 12 }}>
                   {destination.tags.map((tag) => (
                     <span
                       key={tag}
-                      className="text-sm font-medium px-4 py-2 rounded-full transition-all duration-[250ms] hover:-translate-y-0.5 hover:shadow-sm cursor-default"
+                      className="inline-flex items-center font-medium cursor-default transition-all hover:-translate-y-0.5"
                       style={{
-                        background: '#FFF4F0',
-                        color: '#FF6238',
-                        border: '1.5px solid #FFE4DB',
-                        height: 42,
-                        display: 'inline-flex',
-                        alignItems: 'center',
+                        height: 36, padding: '0 16px', fontSize: 14, borderRadius: 999,
+                        background: '#FFF4F0', color: '#FF6238', border: '1.5px solid #FFE4DB',
                       }}
                     >
                       {tag}
@@ -369,16 +363,16 @@ export function DestinationDetail() {
 
             {/* Hotels */}
             {hotels.length > 0 && (
-              <div style={CARD_STYLE} className="p-8">
-                <h2 className={`text-[22px] ${SECTION_TITLE}`}>Alojamentos sugeridos</h2>
-                <div className="flex gap-4 overflow-x-auto pb-2 -mx-1 px-1" style={{ scrollbarWidth: 'none' }}>
+              <div style={{ ...CARD, padding: 24 }}>
+                <h2 className="font-bold text-[#1F2937] mb-4" style={{ fontSize: 34 }}>Alojamentos sugeridos</h2>
+                <div className="flex overflow-x-auto pb-2" style={{ gap: 16, scrollbarWidth: 'none' }}>
                   {hotels.map((hotel) => (
                     <div
                       key={hotel.id}
-                      className="flex-shrink-0 rounded-[14px] overflow-hidden transition-all duration-[250ms] hover:-translate-y-1 hover:shadow-[0_12px_32px_rgba(0,0,0,0.12)] cursor-pointer"
-                      style={{ width: 200, background: '#FAFAFA', border: '1px solid #ECECEC' }}
+                      className="flex-shrink-0 overflow-hidden transition-all hover:-translate-y-1 cursor-pointer"
+                      style={{ width: 170, height: 170, borderRadius: 14, background: '#FAFAFA', border: '1px solid #ECECEC' }}
                     >
-                      <div className="h-[120px] bg-gray-200 overflow-hidden">
+                      <div className="overflow-hidden" style={{ height: 110 }}>
                         {hotel.imageUrl
                           ? <img src={hotel.imageUrl} alt={hotel.name} className="w-full h-full object-cover" />
                           : <div className="w-full h-full bg-gradient-to-br from-brand-100 to-brand-200 flex items-center justify-center">
@@ -386,16 +380,13 @@ export function DestinationDetail() {
                             </div>
                         }
                       </div>
-                      <div className="p-3">
-                        <p className="font-semibold text-[#1F2937] text-sm truncate">{hotel.name}</p>
+                      <div className="p-2.5">
+                        <p className="font-semibold text-[#1F2937] truncate" style={{ fontSize: 16 }}>{hotel.name}</p>
                         {hotel.rating && (
-                          <div className="flex items-center gap-1 mt-1">
-                            <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                            <span className="text-xs text-[#6B7280]">{hotel.rating}</span>
+                          <div className="flex items-center gap-1 mt-0.5">
+                            <Star className="fill-amber-400 text-amber-400" style={{ width: 12, height: 12 }} />
+                            <span className="text-[#6B7280]" style={{ fontSize: 14 }}>{hotel.rating}</span>
                           </div>
-                        )}
-                        {hotel.pricePerNight && (
-                          <p className="text-sm font-bold text-[#FF6238] mt-1">€{hotel.pricePerNight}<span className="text-xs font-normal text-[#6B7280]">/noite</span></p>
                         )}
                       </div>
                     </div>
@@ -405,88 +396,95 @@ export function DestinationDetail() {
             )}
           </div>
 
-          {/* ── RIGHT COLUMN (sticky) ────────────────────────────────────── */}
-          <div className="hidden lg:flex flex-col gap-5" style={{ position: 'sticky', top: 100 }}>
+          {/* ── RIGHT COLUMN (sidebar) ───────────────────────────────────── */}
+          <div
+            className="flex flex-col w-full"
+            style={{ position: 'sticky', top: 88, gap: 20 }}
+          >
 
             {/* Compatibility card */}
-            {compat && (
-              <div style={CARD_STYLE} className="p-6">
+            {compat ? (
+              <div style={{ ...CARD, padding: 28 }}>
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-bold text-[#1F2937] text-[16px]">Compatibilidade</h3>
-                  <span className="text-xs text-[#6B7280] bg-gray-100 px-2.5 py-1 rounded-full">Perfil</span>
+                  <h3 className="font-bold text-[#1F2937]" style={{ fontSize: 32 }}>Compatibilidade</h3>
+                  <span
+                    className="font-medium text-[#6B7280] bg-gray-100 inline-flex items-center"
+                    style={{ height: 34, padding: '0 14px', borderRadius: 999, fontSize: 13 }}
+                  >
+                    Perfil
+                  </span>
                 </div>
+
                 <div className="flex items-center gap-5 mb-4">
                   <CircleProgress value={compat.score} />
                   <div>
-                    <p className="text-2xl font-bold text-[#1F2937]">{compat.score}%</p>
-                    <p className="text-xs text-[#6B7280]">compatível com o teu perfil</p>
+                    <p className="font-bold text-[#1F2937] leading-none" style={{ fontSize: 32 }}>{compat.score}%</p>
+                    <p className="text-[#6B7280] mt-1" style={{ fontSize: 16 }}>compatível com o teu perfil</p>
                   </div>
                 </div>
+
                 {compat.reasons.length > 0 && (
-                  <div className="space-y-2 mb-5">
+                  <div className="mb-4" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                     {compat.reasons.map((r) => (
-                      <div key={r} className="flex items-center gap-2 text-sm text-[#1F2937]">
-                        <CheckCircle2 className="w-4 h-4 text-[#FF6238] flex-shrink-0" />
-                        {r}
+                      <div key={r} className="flex items-center gap-2">
+                        <CheckCircle2 className="text-green-500 flex-shrink-0" style={{ width: 18, height: 18 }} />
+                        <span className="text-[#1F2937]" style={{ fontSize: 16 }}>{r}</span>
                       </div>
                     ))}
                   </div>
                 )}
-                {/* Primary CTA */}
-                <Link to={`/viagens/nova?destino=${destination.id}&nome=${encodeURIComponent(destination.name)}`}>
+
+                <Link to={`/viagens/nova?destino=${destination.id}&nome=${encodeURIComponent(destination.name)}`} className="block">
                   <button
-                    className="w-full text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all duration-[250ms] hover:opacity-90 active:scale-[.98]"
-                    style={{ background: '#FF6238', height: 56, fontSize: 15 }}
+                    className="w-full text-white font-semibold flex items-center justify-center gap-2 transition-all hover:opacity-90 active:scale-[.98]"
+                    style={{ height: 54, borderRadius: 12, background: '#FF6238', fontSize: 17 }}
                   >
                     <Calendar className="w-5 h-5" />
                     Planear viagem
                   </button>
                 </Link>
-                <div className="grid grid-cols-2 gap-2.5 mt-2.5">
-                  <Link to={`/playlists?destino=${encodeURIComponent(destination.name)}`} className="block">
+                <div className="flex gap-3 mt-3">
+                  <Link to={`/playlists?destino=${encodeURIComponent(destination.name)}`} style={{ width: '48%' }} className="block">
                     <button
-                      className="w-full text-[#1F2937] font-medium rounded-xl flex items-center justify-center gap-2 transition-all duration-[250ms] hover:bg-gray-50"
-                      style={{ height: 44, fontSize: 14, border: '1.5px solid #ECECEC', background: '#fff' }}
+                      className="w-full text-[#1F2937] font-medium flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors"
+                      style={{ height: 48, borderRadius: 12, border: '1.5px solid #ECECEC', background: '#fff', fontSize: 14 }}
                     >
                       <Music className="w-4 h-4" /> Playlist
                     </button>
                   </Link>
-                  <Link to={`/viagens/nova?destino=${destination.id}`} className="block">
+                  <Link to={`/viagens/nova?destino=${destination.id}`} style={{ width: '48%' }} className="block">
                     <button
-                      className="w-full text-[#6B7280] font-medium rounded-xl flex items-center justify-center gap-2 transition-all duration-[250ms] hover:bg-gray-50"
-                      style={{ height: 44, fontSize: 14, border: '1.5px solid #ECECEC', background: '#fff' }}
+                      className="w-full text-[#6B7280] font-medium flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors"
+                      style={{ height: 48, borderRadius: 12, border: '1.5px solid #ECECEC', background: '#fff', fontSize: 14 }}
                     >
                       <Plus className="w-4 h-4" /> À viagem
                     </button>
                   </Link>
                 </div>
               </div>
-            )}
-
-            {/* If no profile, just show CTAs */}
-            {!compat && (
-              <div style={CARD_STYLE} className="p-5 space-y-3">
-                <Link to={`/viagens/nova?destino=${destination.id}&nome=${encodeURIComponent(destination.name)}`}>
+            ) : (
+              <div style={{ ...CARD, padding: 24 }} className="flex flex-col gap-3">
+                <Link to={`/viagens/nova?destino=${destination.id}&nome=${encodeURIComponent(destination.name)}`} className="block">
                   <button
-                    className="w-full text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all duration-[250ms] hover:opacity-90"
-                    style={{ background: '#FF6238', height: 56, fontSize: 15 }}
+                    className="w-full text-white font-semibold flex items-center justify-center gap-2 hover:opacity-90 transition-all"
+                    style={{ height: 54, borderRadius: 12, background: '#FF6238', fontSize: 17 }}
                   >
                     <Calendar className="w-5 h-5" /> Planear viagem
                   </button>
                 </Link>
-                <div className="grid grid-cols-2 gap-2.5">
-                  <Link to={`/playlists?destino=${encodeURIComponent(destination.name)}`} className="block">
+                <div className="flex gap-3">
+                  <Link to={`/playlists?destino=${encodeURIComponent(destination.name)}`} style={{ width: '48%' }} className="block">
                     <button
-                      className="w-full text-[#1F2937] font-medium rounded-xl flex items-center justify-center gap-2 transition-all duration-[250ms] hover:bg-gray-50"
-                      style={{ height: 44, fontSize: 14, border: '1.5px solid #ECECEC', background: '#fff' }}
+                      className="w-full text-[#1F2937] font-medium flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors"
+                      style={{ height: 48, borderRadius: 12, border: '1.5px solid #ECECEC', background: '#fff', fontSize: 14 }}
                     >
                       <Music className="w-4 h-4" /> Playlist
                     </button>
                   </Link>
-                  <Link to={`/viagens/nova?destino=${destination.id}`} className="block">
+                  <Link to={`/viagens/nova?destino=${destination.id}`} style={{ width: '48%' }} className="block">
                     <button
-                      className="w-full text-[#6B7280] font-medium rounded-xl flex items-center justify-center gap-2 transition-all duration-[250ms] hover:bg-gray-50"
-                      style={{ height: 44, fontSize: 14, border: '1.5px solid #ECECEC', background: '#fff' }}
+                      className="w-full text-[#6B7280] font-medium flex items-center justify-center gap-2 hover:bg-gray-50 transition-colors"
+                      style={{ height: 48, borderRadius: 12, border: '1.5px solid #ECECEC', background: '#fff', fontSize: 14 }}
                     >
                       <Plus className="w-4 h-4" /> À viagem
                     </button>
@@ -495,97 +493,91 @@ export function DestinationDetail() {
               </div>
             )}
 
-            {/* Budget + Weather — side by side */}
-            <div className="grid grid-cols-2 gap-3">
-              <div style={CARD_STYLE} className="p-4">
-                <div className="flex items-center gap-1.5 mb-2">
-                  <DollarSign className="w-3.5 h-3.5 text-[#FF6238]" />
-                  <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Orçamento</p>
-                </div>
-                <p className="font-bold text-[#1F2937] text-[15px]">€{budget.min}–{budget.max}</p>
-                <p className="text-xs text-[#6B7280] mt-0.5">por pessoa/dia</p>
+            {/* Budget */}
+            <div style={{ ...CARD, height: 130, padding: 24 }}>
+              <div className="flex items-center gap-2 mb-2">
+                <DollarSign className="text-[#FF6238]" style={{ width: 16, height: 16 }} />
+                <p className="font-semibold text-[#6B7280] uppercase tracking-wide" style={{ fontSize: 12 }}>Orçamento</p>
               </div>
-              <div style={CARD_STYLE} className="p-4">
-                <div className="flex items-center gap-1.5 mb-2">
-                  <Thermometer className="w-3.5 h-3.5 text-[#FF6238]" />
-                  <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide">Clima</p>
-                </div>
-                <p className="font-bold text-[#1F2937] text-[15px]">{weather.low}° – {weather.high}°C</p>
-                <p className="text-xs text-[#6B7280] mt-0.5">{weather.label}</p>
-              </div>
+              <p className="font-bold text-[#1F2937]" style={{ fontSize: 22 }}>€{budget.min} – €{budget.max}</p>
+              <p className="text-[#6B7280] mt-1" style={{ fontSize: 14 }}>por pessoa/dia</p>
             </div>
 
-            {/* Best time */}
-            <div style={CARD_STYLE} className="p-5">
-              <div className="flex items-center gap-2 mb-3">
-                <Calendar className="w-4 h-4 text-[#FF6238]" />
-                <h3 className="font-bold text-[#1F2937] text-[15px]">Melhor altura para visitar</h3>
+            {/* Weather */}
+            <div style={{ ...CARD, height: 120, padding: 24 }}>
+              <div className="flex items-center gap-2 mb-2">
+                <Thermometer className="text-[#FF6238]" style={{ width: 16, height: 16 }} />
+                <p className="font-semibold text-[#6B7280] uppercase tracking-wide" style={{ fontSize: 12 }}>Clima</p>
               </div>
-              <p className="text-lg font-bold text-[#1F2937]">{season.months}</p>
-              <p className="text-sm text-[#6B7280] mt-0.5">{season.desc}</p>
+              <p className="font-bold text-[#1F2937]" style={{ fontSize: 22 }}>{weather.low}° – {weather.high}°C</p>
+              <p className="text-[#6B7280] mt-1" style={{ fontSize: 14 }}>{weather.label}</p>
             </div>
 
-            {/* Visa card */}
-            <div style={CARD_STYLE} className="p-5">
+            {/* Best season */}
+            <div style={{ ...CARD, height: 120, padding: 24 }}>
+              <div className="flex items-center gap-2 mb-2">
+                <Calendar className="text-[#FF6238]" style={{ width: 16, height: 16 }} />
+                <p className="font-semibold text-[#6B7280] uppercase tracking-wide" style={{ fontSize: 12 }}>Melhor época</p>
+              </div>
+              <p className="font-bold text-[#1F2937]" style={{ fontSize: 22 }}>{season.months}</p>
+              <p className="text-[#6B7280] mt-1" style={{ fontSize: 14 }}>{season.desc}</p>
+            </div>
+
+            {/* Visa */}
+            <div style={{ ...CARD, padding: 24, minHeight: 120 }}>
               <div className="flex items-center gap-2 mb-3">
-                <ShieldCheck className="w-4 h-4 text-[#FF6238]" />
-                <h3 className="font-bold text-[#1F2937] text-[15px]">Requisitos de entrada</h3>
+                <ShieldCheck className="text-[#FF6238]" style={{ width: 16, height: 16 }} />
+                <p className="font-semibold text-[#6B7280] uppercase tracking-wide" style={{ fontSize: 12 }}>Requisitos de entrada</p>
               </div>
-              <div className="mb-3">
-                <label className="block text-xs text-[#6B7280] mb-1.5">Passaporte</label>
-                <select
-                  value={passport}
-                  onChange={(e) => handlePassportChange(e.target.value)}
-                  className="w-full text-sm border rounded-xl px-3 py-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-[#FF6238]/30 transition-all duration-[250ms]"
-                  style={{ borderColor: '#ECECEC', color: '#1F2937' }}
-                >
-                  <option value="">Selecionar país</option>
-                  {COUNTRIES.map((c) => (
-                    <option key={c.code} value={c.code}>{c.name}</option>
-                  ))}
-                </select>
-              </div>
+              <select
+                value={passport}
+                onChange={(e) => handlePassportChange(e.target.value)}
+                className="w-full border rounded-xl px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-[#FF6238]/30 mb-3"
+                style={{ borderColor: '#ECECEC', color: passport ? '#1F2937' : '#9CA3AF', fontSize: 14 }}
+              >
+                <option value="">Selecionar passaporte</option>
+                {COUNTRIES.map((c) => (
+                  <option key={c.code} value={c.code}>{c.name}</option>
+                ))}
+              </select>
               {passport && (
-                visaLoading ? (
-                  <div className="h-10 bg-gray-100 rounded-xl animate-pulse" />
-                ) : visaInfo ? (
-                  <div className="space-y-2.5">
-                    <span
-                      className="inline-block text-xs font-semibold px-3 py-1.5 rounded-full"
-                      style={{ background: visaStatusConfig[visaInfo.status].bg, color: visaStatusConfig[visaInfo.status].text }}
-                    >
-                      {visaStatusConfig[visaInfo.status].label}
-                    </span>
-                    <div className="text-xs text-[#6B7280] space-y-1">
-                      {visaInfo.days && visaInfo.status !== 'domestic' && (
-                        <p>Estadia máxima: <strong className="text-[#1F2937]">{visaInfo.days} dias</strong></p>
-                      )}
-                      {visaInfo.cost && (
-                        <p>Custo: <strong className="text-[#1F2937]">{visaInfo.cost}</strong></p>
-                      )}
-                      {visaInfo.notes && <p className="italic">{visaInfo.notes}</p>}
-                    </div>
-                    {visaInfo.link && (
-                      <a
-                        href={visaInfo.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-1 text-xs font-medium text-[#FF6238] hover:underline"
-                      >
-                        <ExternalLink className="w-3 h-3" />
-                        Informação oficial
-                      </a>
-                    )}
-                  </div>
-                ) : null
+                visaLoading
+                  ? <div className="h-8 bg-gray-100 rounded-lg animate-pulse" />
+                  : visaInfo
+                    ? (
+                      <div className="space-y-2">
+                        <span
+                          className="inline-block text-xs font-semibold px-3 py-1.5 rounded-full"
+                          style={{ background: visaStatusConfig[visaInfo.status].bg, color: visaStatusConfig[visaInfo.status].text }}
+                        >
+                          {visaStatusConfig[visaInfo.status].label}
+                        </span>
+                        <div className="text-xs text-[#6B7280] space-y-1">
+                          {visaInfo.days && visaInfo.status !== 'domestic' && (
+                            <p>Estadia: <strong className="text-[#1F2937]">{visaInfo.days} dias</strong></p>
+                          )}
+                          {visaInfo.cost && <p>Custo: <strong className="text-[#1F2937]">{visaInfo.cost}</strong></p>}
+                          {visaInfo.notes && <p className="italic">{visaInfo.notes}</p>}
+                        </div>
+                        {visaInfo.link && (
+                          <a
+                            href={visaInfo.link} target="_blank" rel="noopener noreferrer"
+                            className="flex items-center gap-1 text-xs font-medium text-[#FF6238] hover:underline"
+                          >
+                            <ExternalLink style={{ width: 12, height: 12 }} /> Informação oficial
+                          </a>
+                        )}
+                      </div>
+                    )
+                    : null
               )}
               {!passport && (
-                <p className="text-xs text-gray-400">Seleciona o passaporte para ver os requisitos de visto.</p>
+                <p className="text-xs text-gray-400">Seleciona o passaporte para ver os requisitos.</p>
               )}
             </div>
 
-          </div>{/* end right column */}
-        </div>{/* end grid */}
+          </div>
+        </div>
 
       </div>
     </div>
